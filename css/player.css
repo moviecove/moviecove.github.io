@@ -1,0 +1,39 @@
+.player-box {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 9999;
+  box-shadow: 0 0 20px rgba(0,0,0,.8);
+}
+
+.player-box.landscape {
+  width: 90vw;
+  height: 50vh;
+}
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #111;
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: move;
+}
+
+.player-controls button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
