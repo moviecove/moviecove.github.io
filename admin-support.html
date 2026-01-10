@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>MC Admin Support</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+
+  margin:0;
+
+  font-family:Arial,Helvetica,sans-serif;
+
+  background:#0d0d0d;
+
+  color:#fff;
+
+}
+
+/* USER LIST */
+
+#userList{
+
+  padding:15px;
+
+}
+
+.userItem{
+
+  padding:12px;
+
+  border-bottom:1px solid #222;
+
+  cursor:pointer;
+
+}
+
+.userItem:hover{
+
+  background:#1a1a1a;
+
+}
+
+/* POPUP */
+
+#adminPopup{
+
+  position:fixed;
+
+  left:0;
+
+  right:0;
+
+  bottom:-100%;
+
+  height:80vh;
+
+  background:#111;
+
+  border-radius:16px 16px 0 0;
+
+  display:flex;
+
+  flex-direction:column;
+
+  transition:.3s ease;
+
+  z-index:9999;
+
+}
+
+#adminPopup.open{
+
+  bottom:0;
+
+}
+
+/* HEADER */
+
+#adminHeader{
+
+  padding:12px;
+
+  background:#000;
+
+  color:#e50914;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  cursor:grab;
+
+}
+
+#adminMessages{
+
+  flex:1;
+
+  padding:10px;
+
+  overflow-y:auto;
+
+}
+
+/* MESSAGES */
+
+.msg{
+
+  max-width:75%;
+
+  padding:10px;
+
+  margin:6px 0;
+
+  border-radius:10px;
+
+  font-size:14px;
+
+}
+
+.userMsg{
+
+  background:#333;
+
+}
+
+.adminMsg{
+
+  background:#e50914;
+
+  margin-left:auto;
+
+}
+
+/* INPUT */
+
+#adminInput{
+
+  display:flex;
+
+  gap:8px;
+
+  padding:10px;
+
+}
+
+#adminInput input{
+
+  flex:1;
+
+  padding:10px;
+
+  border:none;
+
+  border-radius:8px;
+
+}
+
+#adminInput button{
+
+  background:#e50914;
+
+  border:none;
+
+  color:#fff;
+
+  padding:10px 14px;
+
+  border-radius:8px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2 style="padding:15px;color:#e50914">Admin Support</h2>
+
+<div id="userList">Loading users...</div>
+
+<!-- ADMIN CHAT POPUP -->
+
+<div id="adminPopup">
+
+  <div id="adminHeader">
+
+    <span id="chatUser">User</span>
+
+    <span id="closeAdmin">─</span>
+
+  </div>
+
+  <div id="adminMessages"></div>
+
+  <div id="adminInput">
+
+    <input type="text" id="adminText" placeholder="Type reply..." />
+
+    <button id="adminSend">Send</button>
+
+  </div>
+
+</div>
+
+<script>
+
+const userList=document.getElementById("userList");
+
+const popup=document.getElementById("adminPopup");
+
+const chatUser=document.getElementById("chatUser");
+
+const messages=document.getElementById("adminMessages");
+
+const adminText=document.getElementById("adminText");
+
+let currentUser="";
+
+/* LOAD USERS */
+
+function loadUsers(){
+
+  fetch("support.json")
+
+  .then(r=>r.json())
+
+  .then(data=>{
+
+    userList.innerHTML="";
+
+    for(let user in data){
+
+      const div=document.createElement("div");
+
+      div.className="userItem";
+
+      div.textContent=user;
+
+      div.onclick=()=>openChat(user);
+
+      userList.appendChild(div);
+
+    }
+
+  });
+
+}
+
+/* OPEN CHAT */
+
+function openChat(user){
+
+  currentUser=user;
+
+  chatUser.textContent=user;
+
+  popup.classList.add("open");
+
+  loadChat();
+
+}
+
+/* CLOSE */
+
+document.getElementById("closeAdmin").onclick=()=>{
+
+  popup.classList.remove("open");
+
+};
+
+/* LOAD CHAT */
+
+function loadChat(){
+
+  fetch("support.php?user="+encodeURIComponent(currentUser))
+
+  .then(r=>r.json())
+
+  .then(data=>{
+
+    messages.innerHTML="";
+
+    data.forEach(m=>{
+
+      const div=document.createElement("div");
+
+      div.className="msg "+(m.from==="admin"?"adminMsg":"userMsg");
+
+      div.textContent=m.text;
+
+      messages.appendChild(div);
+
+    });
+
+    messages.scrollTop=messages.scrollHeight;
+
+  });
+
+}
+
+/* SEND */
+
+document.getElementById("adminSend").onclick=()=>{
+
+  if(!adminText.value.trim())return;
+
+  fetch("support.php",{
+
+    method:"POST",
+
+    headers:{"Content-Type":"application/json"},
+
+    body:JSON.stringify({
+
+      user:currentUser,
+
+      text:adminText.value,
+
+      admin:true
+
+    })
+
+  }).then(()=>{
+
+    adminText.value="";
+
+    loadChat();
+
+  });
+
+};
+
+/* AUTO REFRESH */
+
+setInterval(()=>{
+
+  if(popup.classList.contains("open")){
+
+    loadChat();
+
+  }
+
+},4000);
+
+loadUsers();
+
+</script>
+
+</body>
+
+</html>

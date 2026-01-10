@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Continue Watching • MC Movies</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* ===== BASE ===== */
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+}
+body.light{
+  background:#f4f4f4;
+  color:#000;
+}
+
+/* ===== HEADER ===== */
+header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px;
+}
+#logo{
+  color:#e50914;
+  font-size:22px;
+  font-weight:bold;
+}
+#userEmail{
+  margin-left:auto;
+  font-size:14px;
+  opacity:.8;
+}
+
+/* ===== GRID ===== */
+#list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:15px;
+  padding:12px;
+  padding-bottom:110px; /* NAV SAFE SPACE */
+}
+
+.card{
+  position:relative;
+  cursor:pointer;
+}
+.card img{
+  width:100%;
+  border-radius:10px;
+}
+.card h4{
+  font-size:14px;
+  margin:6px 0 0;
+}
+.badge{
+  position:absolute;
+  top:8px;
+  left:8px;
+  background:#e50914;
+  padding:4px 6px;
+  font-size:11px;
+  border-radius:4px;
+}
+
+/* ===== PLAYER (FIXED) ===== */
+#playerBox{
+  position:fixed;
+  inset:0;
+  background:#000;
+  visibility:hidden;
+  opacity:0;
+  z-index:-1;           /* 🔑 NOT CLICKABLE */
+  transition:.2s;
+}
+#playerBox.active{
+  visibility:visible;
+  opacity:1;
+  z-index:900;
+}
+
+#playerHeader{
+  display:flex;
+  align-items:center;
+  padding:8px;
+  background:#111;
+}
+#playerHeader span{
+  color:#e50914;
+  font-weight:bold;
+}
+#playerHeader button{
+  margin-left:auto;
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:22px;
+}
+
+#playerBox iframe{
+  width:100%;
+  height:calc(100% - 40px);
+  border:none;
+}
+
+/* ===== NAV (ALWAYS CLICKABLE) ===== */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#111;
+  display:flex;
+  justify-content:space-around;
+  padding:10px 0;
+  z-index:1000; /* ABOVE EVERYTHING */
+}
+nav a{
+  color:#fff;
+  text-decoration:none;
+}
+nav i{
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div id="logo">MC</div>
+  <strong>Continue Watching</strong>
+  <div id="userEmail">Not logged in</div>
+</header>
+
+<div id="list"></div>
+
+<!-- PLAYER -->
+<div id="playerBox">
+  <div id="playerHeader">
+    <span>MC</span>
+    <button onclick="closePlayer()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  <iframe id="playerFrame" allowfullscreen></iframe>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="home.html"><i class="fa-solid fa-house"></i></a>
+  <a href="continue.html"><i class="fa-solid fa-video"></i></a>
+  <a href="settings1.html"><i class="fa-solid fa-gear"></i></a>
+  <a href="#" id="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+</nav>
+
+<script>
+/* ===== THEME ===== */
+if(localStorage.getItem("theme")==="light"){
+  document.body.classList.add("light");
+}
+
+/* ===== AUTH ===== */
+function isLoggedIn(){
+  return localStorage.getItem("loggedIn")==="yes";
+}
+function getEmail(){
+  return localStorage.getItem("userEmail");
+}
+
+document.getElementById("userEmail").textContent =
+  isLoggedIn()? getEmail() : "Not logged in";
+
+/* ===== LOAD CONTINUE ===== */
+const list = document.getElementById("list");
+
+function loadContinue(){
+  if(!isLoggedIn()){
+    list.innerHTML="<p>Please login to continue watching.</p>";
+    return;
+  }
+
+  const key = "continue_watch_" + getEmail();
+  const data = JSON.parse(localStorage.getItem(key) || "{}");
+
+  list.innerHTML = "";
+
+  const keys = Object.keys(data);
+  if(!keys.length){
+    list.innerHTML = "<p>No continue history yet.</p>";
+    return;
+  }
+
+  keys.forEach(id=>{
+    const v = data[id];
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <img src="${v.thumb}">
+      <h4>${v.title}</h4>
+      ${v.finished ? '<div class="badge">Finished</div>' : ''}
+    `;
+
+    card.onclick = ()=>play(id);
+
+    /* LONG PRESS DELETE */
+    let timer;
+    card.addEventListener("touchstart", ()=>{
+      timer = setTimeout(()=>{
+        if(confirm("Remove this movie from Continue Watching?")){
+          delete data[id];
+          localStorage.setItem(key, JSON.stringify(data));
+          loadContinue();
+        }
+      }, 700);
+    });
+    card.addEventListener("touchend", ()=>clearTimeout(timer));
+
+    list.appendChild(card);
+  });
+}
+
+/* ===== PLAYER ===== */
+function play(id){
+  const box = document.getElementById("playerBox");
+  const frame = document.getElementById("playerFrame");
+
+  box.classList.add("active");
+  frame.src = "https://www.youtube.com/embed/" + id + "?autoplay=1&rel=0";
+}
+
+function closePlayer(){
+  document.getElementById("playerFrame").src = "";
+  document.getElementById("playerBox").classList.remove("active");
+}
+
+/* ===== LOGOUT ===== */
+document.getElementById("logout").onclick = ()=>{
+  localStorage.clear();
+  location.href="login.html";
+};
+
+/* INIT */
+loadContinue();
+</script>
+
+</body>
+</html>

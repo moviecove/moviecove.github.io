@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MC Referrals</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+body{
+
+  margin:0;
+
+  font-family:Arial,Helvetica,sans-serif;
+
+  background:#000;
+
+  color:#fff;
+
+}
+
+body.light{
+
+  background:#f4f4f4;
+
+  color:#000;
+
+}
+
+/* HEADER */
+
+header{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  padding:14px;
+
+}
+
+#logo{
+
+  color:#e50914;
+
+  font-weight:bold;
+
+  font-size:22px;
+
+}
+
+#userEmail{
+
+  margin-left:auto;
+
+  font-size:14px;
+
+  opacity:.8;
+
+}
+
+/* CARD */
+
+.card{
+
+  background:#111;
+
+  border-radius:12px;
+
+  padding:16px;
+
+  margin:12px;
+
+}
+
+body.light .card{background:#fff;}
+
+.card h3{
+
+  margin:0 0 10px;
+
+  font-size:16px;
+
+}
+
+/* WALLET */
+
+.wallet{
+
+  display:grid;
+
+  grid-template-columns:repeat(3,1fr);
+
+  gap:10px;
+
+}
+
+.wallet div{
+
+  text-align:center;
+
+  padding:10px;
+
+  background:#000;
+
+  border-radius:10px;
+
+}
+
+body.light .wallet div{background:#eee;}
+
+.amount{
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:#e50914;
+
+}
+
+/* INPUTS */
+
+input,select,button{
+
+  width:100%;
+
+  padding:12px;
+
+  border-radius:8px;
+
+  border:none;
+
+  outline:none;
+
+  margin-top:8px;
+
+  font-size:15px;
+
+}
+
+button{
+
+  background:#e50914;
+
+  color:#fff;
+
+  font-weight:bold;
+
+}
+
+/* REF LINK */
+
+.refLink{
+
+  display:flex;
+
+  gap:8px;
+
+}
+
+.refLink input{flex:1}
+
+/* LIST */
+
+.list div{
+
+  padding:8px 0;
+
+  border-bottom:1px solid #333;
+
+  font-size:14px;
+
+}
+
+/* HISTORY */
+
+.history div{
+
+  padding:10px 0;
+
+  border-bottom:1px solid #333;
+
+  font-size:14px;
+
+}
+
+/* NAV */
+
+nav{
+
+  position:fixed;
+
+  bottom:0;
+
+  left:0;
+
+  right:0;
+
+  background:#111;
+
+  display:flex;
+
+  justify-content:space-around;
+
+  padding:10px 0;
+
+}
+
+nav a{color:#fff;text-decoration:none;}
+
+nav i{font-size:20px;}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+  <div id="logo">MC</div>
+
+  <div>Referrals</div>
+
+  <div id="userEmail"></div>
+
+</header>
+
+<!-- WALLET -->
+
+<div class="card">
+
+  <h3>Wallet</h3>
+
+  <div class="wallet">
+
+    <div>Balance<div class="amount" id="balance">₦0</div></div>
+
+    <div>Earned<div class="amount" id="earned">₦0</div></div>
+
+    <div>Withdrawn<div class="amount" id="withdrawn">₦0</div></div>
+
+  </div>
+
+  <select id="currency">
+
+    <option value="NGN">₦ NGN</option>
+
+    <option value="USD">$ USD</option>
+
+    <option value="EUR">€ EUR</option>
+
+  </select>
+
+</div>
+
+<!-- REFERRAL -->
+
+<div class="card">
+
+  <h3>Your Referral Link</h3>
+
+  <div class="refLink">
+
+    <input id="refLink" readonly>
+
+    <button onclick="copyRef()">Copy</button>
+
+  </div>
+
+  <div class="list">
+
+    <div>Total Referrals: <b id="totalRefs">0</b></div>
+
+    <div>Verified: <b id="verifiedRefs">0</b></div>
+
+  </div>
+
+</div>
+
+<!-- PAYOUT DETAILS -->
+
+<div class="card">
+
+  <h3>Payout Details</h3>
+
+  <select id="method">
+
+    <option value="">Select Method</option>
+
+    <option value="Bank">Local Bank</option>
+
+    <option value="PayPal">PayPal</option>
+
+  </select>
+
+  <input id="bank" placeholder="Bank Name">
+
+  <input id="account" placeholder="Account / PayPal Email">
+
+  <button onclick="savePayout()">Save Details</button>
+
+</div>
+
+<!-- WITHDRAW -->
+
+<div class="card">
+
+  <h3>Withdraw</h3>
+
+  <input id="withdrawAmount" placeholder="Amount">
+
+  <button onclick="withdraw()">Request Withdrawal</button>
+
+</div>
+
+<!-- HISTORY -->
+
+<div class="card">
+
+  <h3>Payout History</h3>
+
+  <div class="history" id="history">No payouts yet</div>
+
+</div>
+
+<nav>
+
+  <a href="home.html"><i class="fa-solid fa-house"></i></a>
+
+  <a href="continue1.html"><i class="fa-solid fa-video"></i></a>
+
+  <a href="settings1.html"><i class="fa-solid fa-gear"></i></a>
+
+</nav>
+
+<script>
+
+/* THEME */
+
+if(localStorage.getItem("theme")==="light"){
+
+  document.body.classList.add("light");
+
+}
+
+/* AUTH */
+
+if(localStorage.getItem("loggedIn")!=="yes"){
+
+  location.href="login.html";
+
+}
+
+const email = localStorage.getItem("userEmail");
+
+userEmail.textContent=email;
+
+/* KEYS */
+
+const walletKey="wallet_"+email;
+
+const refKey="refs_"+email;
+
+const payoutKey="payouts_"+email;
+
+/* WALLET */
+
+let wallet = JSON.parse(localStorage.getItem(walletKey)) || {
+
+  balance:0,earned:0,withdrawn:0,currency:"NGN"
+
+};
+
+/* RENDER */
+
+function render(){
+
+  const s = wallet.currency==="USD"?"$":wallet.currency==="EUR"?"€":"₦";
+
+  balance.textContent=s+wallet.balance;
+
+  earned.textContent=s+wallet.earned;
+
+  withdrawn.textContent=s+wallet.withdrawn;
+
+  currency.value=wallet.currency;
+
+}
+
+render();
+
+/* CURRENCY */
+
+currency.onchange=()=>{
+
+  wallet.currency=currency.value;
+
+  localStorage.setItem(walletKey,JSON.stringify(wallet));
+
+  render();
+
+};
+
+/* REF LINK */
+
+refLink.value=location.origin+"/register.html?ref="+btoa(email);
+
+/* COPY */
+
+function copyRef(){
+
+  refLink.select();
+
+  document.execCommand("copy");
+
+  alert("Copied");
+
+}
+
+/* FAKE REF SIM */
+
+let refs=JSON.parse(localStorage.getItem(refKey))||[];
+
+if(refs.length<2){
+
+  refs.push({email:"user@test.com",verified:true});
+
+  wallet.balance+=1000;
+
+  wallet.earned+=1000;
+
+  localStorage.setItem(refKey,JSON.stringify(refs));
+
+  localStorage.setItem(walletKey,JSON.stringify(wallet));
+
+}
+
+totalRefs.textContent=refs.length;
+
+verifiedRefs.textContent=refs.filter(r=>r.verified).length;
+
+/* PAYOUT SAVE */
+
+function savePayout(){
+
+  localStorage.setItem("payout_"+email,JSON.stringify({
+
+    method:method.value,
+
+    bank:bank.value,
+
+    account:account.value
+
+  }));
+
+  alert("Saved");
+
+}
+
+/* HISTORY */
+
+function renderHistory(){
+
+  const list=JSON.parse(localStorage.getItem(payoutKey))||[];
+
+  if(!list.length){history.innerHTML="No payouts yet";return;}
+
+  history.innerHTML="";
+
+  list.forEach(p=>{
+
+    history.innerHTML+=`
+
+      <div>
+
+        <b>${p.currency}${p.amount}</b> • ${p.method}<br>
+
+        Status: <span style="color:#e50914">${p.status}</span><br>
+
+        <small>${new Date(p.date).toLocaleString()}</small>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+renderHistory();
+
+/* WITHDRAW */
+
+function withdraw(){
+
+  const amt=parseInt(withdrawAmount.value);
+
+  if(amt<5000){alert("Minimum ₦5,000");return;}
+
+  if(amt>wallet.balance){alert("Insufficient");return;}
+
+  wallet.balance-=amt;
+
+  wallet.withdrawn+=amt;
+
+  let payouts=JSON.parse(localStorage.getItem(payoutKey))||[];
+
+  payouts.unshift({
+
+    amount:amt,
+
+    currency:wallet.currency==="USD"?"$":wallet.currency==="EUR"?"€":"₦",
+
+    method:method.value,
+
+    status:"Pending",
+
+    date:Date.now()
+
+  });
+
+  localStorage.setItem(walletKey,JSON.stringify(wallet));
+
+  localStorage.setItem(payoutKey,JSON.stringify(payouts));
+
+  render();
+
+  renderHistory();
+
+  alert("Withdrawal submitted");
+
+}
+
+</script>
+
+</body>
+
+</html>
