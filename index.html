@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MovieCove</title>
+
+  <!-- BASIC META -->
+  <meta name="title" content="MovieCove - Stream Movies Online">
+  <meta name="description" content="MovieCove is a streaming platform to discover and watch movies online.">
+  <meta name="keywords" content="movies, streaming, watch movies online, MovieCove">
+  <meta name="author" content="MovieCove">
+  <meta name="robots" content="index, follow">
+
+  <meta name="theme-color" content="#e50914">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Particle background */
+    .particle {
+      position: absolute;
+      background: #e50914;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 4s infinite ease-in-out;
+      transition: opacity 1s ease;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-150px) translateX(80px); }
+      100% { transform: translateY(0) translateX(0); }
+    }
+
+    /* Logo image */
+    .logo {
+      width: 200px;
+      max-width: 60%;
+      opacity: 0;
+      transform: scale(0.6);
+      animation: logoIn 1.5s forwards, glow 2s 1.5s infinite alternate;
+      z-index: 10;
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    @keyframes logoIn {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes glow {
+      from {
+        filter: drop-shadow(0 0 15px #e50914);
+      }
+      to {
+        filter: drop-shadow(0 0 35px #e50914);
+      }
+    }
+
+    .fade-out {
+      opacity: 0 !important;
+      transform: scale(0.5) !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGO IMAGE -->
+  <img src="logo.png" class="logo" alt="MovieCove Logo">
+
+  <script>
+    // Create particles
+    const particleCount = 40;
+    const particles = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      const p = document.createElement("div");
+      p.className = "particle";
+      const size = Math.random() * 8 + 4;
+      p.style.width = p.style.height = size + "px";
+      p.style.left = Math.random() * window.innerWidth + "px";
+      p.style.top = Math.random() * window.innerHeight + "px";
+      p.style.animationDuration = (Math.random() * 3 + 2) + "s";
+      document.body.appendChild(p);
+      particles.push(p);
+    }
+
+    // Fade out
+    setTimeout(() => {
+      document.querySelector(".logo").classList.add("fade-out");
+      particles.forEach(p => p.classList.add("fade-out"));
+    }, 4000);
+
+    // Redirect
+    setTimeout(() => {
+      window.location.href = "home.html";
+    }, 5000);
+  </script>
+
+</body>
+</html>
