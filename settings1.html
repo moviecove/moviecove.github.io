@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings • MC Movies</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+<style>
+:root{
+  --bg:#000;
+  --card:#111;
+  --text:#fff;
+  --accent:#e50914;
+}
+body.light{
+  --bg:#f4f4f4;
+  --card:#fff;
+  --text:#000;
+}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+/* HEADER */
+header{
+  padding:15px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+header img{
+  height:50px;
+}
+header span{
+  font-size:20px;
+  font-weight:bold;
+  color:var(--accent);
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  margin:12px;
+  padding:15px;
+  border-radius:10px;
+}
+
+/* SUPPORT FLOAT BUTTON */
+#supportFloatBtn{
+  position:fixed;
+  right:18px;
+  bottom:90px;
+  width:54px;
+  height:54px;
+  background:#e50914;
+  color:#fff;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  cursor:pointer;
+  z-index:10000;
+  box-shadow:0 6px 16px rgba(0,0,0,.5);
+}
+
+/* SUPPORT POPUP */
+#supportPopup{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:-100%;
+  height:80vh;
+  background:#111;
+  border-radius:16px 16px 0 0;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  transition:.3s ease;
+}
+#supportPopup.open{
+  bottom:0;
+}
+/* HEADER */
+#supportHeader{
+  padding:12px;
+  background:#000;
+  color:#e50914;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:grab;
+}
+.adminStatus{
+  font-size:11px;
+  color:#4caf50;
+}
+.adminStatus i{
+  font-size:8px;
+}
+/* MESSAGES */
+#supportMessages{
+  flex:1;
+  padding:10px;
+  overflow-y:auto;
+}
+.msg{
+  max-width:75%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:10px;
+  font-size:14px;
+}
+.userMsg{
+  background:#e50914;
+  margin-left:auto;
+}
+.adminMsg{
+  background:#333;
+}
+/* INPUT */
+#supportInput{
+  display:flex;
+  gap:8px;
+  padding:10px;
+}
+#supportInput input{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+}
+#supportInput button{
+  background:#e50914;
+  border:none;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:8px;
+}
+/* PROFILE */
+.profile{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+.avatar{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+}
+/* TOGGLES */
+.toggle{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:12px 0;
+}
+.toggle input{
+  width:40px;
+  height:20px;
+}
+/* FAQ */
+.faq h4{
+  margin:10px 0;
+  cursor:pointer;
+}
+.faq p{
+  display:none;
+  font-size:14px;
+  opacity:.85;
+}
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  background:var(--accent);
+  border:none;
+  border-radius:6px;
+  color:#fff;
+  font-size:15px;
+  margin-top:10px;
+}
+/* NAV */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#111;
+  display:flex;
+  justify-content:space-around;
+  padding:10px 0;
+}
+nav a{
+  color:#fff;
+  text-decoration:none;
+}
+nav i{
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="https://via.placeholder.com/150x50?text=Logo" alt="Logo">
+</header>
+
+<!-- PROFILE -->
+<div class="card">
+  <div class="profile">
+    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+    <div>
+      <div id="email">Not logged in</div>
+      <small id="status">Logged out</small>
+    </div>
+  </div>
+</div>
+
+<!-- APPEARANCE -->
+<div class="card">
+  <h3>Appearance</h3>
+  <div class="toggle">
+    <span>Dark / Light Mode</span>
+    <input type="checkbox" id="themeToggle">
+  </div>
+</div>
+
+<!-- MOVIE SETTINGS -->
+<div class="card">
+  <h3>Movie Settings</h3>
+  <div class="toggle">
+    <span>Autoplay</span>
+    <input type="checkbox" id="autoplayToggle">
+  </div>
+  <div class="toggle">
+    <span>Data Saver</span>
+    <input type="checkbox" id="dataSaverToggle">
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="card faq">
+  <h3>FAQ</h3>
+  <h4>Why can’t I watch movies without logging in?</h4>
+  <p>To track continue watching and personalize your experience, login is required.</p>
+
+  <h4>Are movies downloaded?</h4>
+  <p>No. Movies are streamed directly.</p>
+
+  <h4>Why is my video buffering?</h4>
+  <p>Check your network or enable Data Saver.</p>
+</div>
+
+<!-- LOGOUT -->
+<div class="card">
+  <button id="logoutBtn">Logout</button>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="home.html"><i class="fa-solid fa-house"></i></a>
+  <a href="continue1.html"><i class="fa-solid fa-video"></i></a>
+  <a href="settings1.html"><i class="fa-solid fa-gear"></i></a>
+  <a href="#" id="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+</nav>
+
+<!-- SUPPORT POPUP -->
+<div id="supportPopup">
+  <div id="supportHeader">
+    <div>
+      <strong>MC Support</strong>
+      <div class="adminStatus">
+        <i class="fa-solid fa-circle"></i> Online
+      </div>
+    </div>
+    <span id="supportClose">─</span>
+  </div>
+  <div id="supportMessages"></div>
+  <div id="supportInput">
+    <input type="text" id="supportText" placeholder="Type your message..." />
+    <button id="supportSend">
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+
+<!-- SUPPORT FLOAT BUTTON -->
+<div id="supportFloatBtn">
+  <i class="fa-solid fa-headset"></i>
+</div>
+
+<script>
+/* ================= AUTH ================= */
+const email = localStorage.getItem("userEmail");
+const loggedIn = localStorage.getItem("loggedIn") === "yes";
+
+if(loggedIn && email){
+  document.getElementById("email").textContent = email;
+  document.getElementById("status").textContent = "Logged in";
+}else{
+  document.getElementById("email").textContent = "Not logged in";
+  document.getElementById("status").textContent = "Logged out";
+}
+
+/* ================= THEME ================= */
+const themeToggle = document.getElementById("themeToggle");
+if(localStorage.getItem("theme")==="light"){
+  document.body.classList.add("light");
+  themeToggle.checked = true;
+}
+themeToggle.onchange = ()=>{
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme", themeToggle.checked ? "light" : "dark");
+};
+
+/* ================= MOVIE SETTINGS ================= */
+const autoplayToggle = document.getElementById("autoplayToggle");
+const dataSaverToggle = document.getElementById("dataSaverToggle");
+
+autoplayToggle.checked = localStorage.getItem("autoplay")==="on";
+dataSaverToggle.checked = localStorage.getItem("datasaver")==="on";
+
+autoplayToggle.onchange=()=>{ localStorage.setItem("autoplay", autoplayToggle.checked?"on":"off"); };
+dataSaverToggle.onchange=()=>{ localStorage.setItem("datasaver", dataSaverToggle.checked?"on":"off"); };
+
+/* ================= FAQ ================= */
+document.querySelectorAll(".faq h4").forEach(q=>{
+  q.onclick=()=>{ const p=q.nextElementSibling; p.style.display=p.style.display==="block"?"none":"block"; };
+});
+
+/* ================= LOGOUT ================= */
+document.getElementById("logoutBtn").onclick=()=>{
+  localStorage.removeItem("loggedIn");
+  localStorage.removeItem("userEmail");
+  location.href="login.html";
+};
+
+/* ================= FIREBASE SUPPORT CHAT ================= */
+
+// FIREBASE CONFIG - replace with your project config
+const firebaseConfig = {
+  apiKey: "AIzaSyBGe_zawZt54ZP2xPrBF9KEos0U1h66lOE",
+  authDomain: "moviecove-1.firebaseapp.com",
+  projectId: "moviecove-1",
+  storageBucket: "moviecove-1.firebasestorage.app",
+  messagingSenderId: "870235002344",
+  appId: "1:870235002344:web:ebc7d4095e52fff85ac05d",
+  measurementId: "G-E911G2VY5H"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const supportPopup = document.getElementById("supportPopup");
+const supportBtn = document.getElementById("supportFloatBtn");
+const supportClose = document.getElementById("supportClose");
+const supportMessages = document.getElementById("supportMessages");
+const supportText = document.getElementById("supportText");
+const supportSend = document.getElementById("supportSend");
+
+function getUserId(){ return localStorage.getItem("userEmail") || "unknown"; }
+function isLoggedIn(){ return localStorage.getItem("loggedIn")==="yes"; }
+
+/* OPEN SUPPORT */
+supportBtn.onclick = ()=>{
+  if(!isLoggedIn()){ alert("Login required to contact support"); location.href="login.html"; return; }
+  supportPopup.classList.add("open");
+};
+
+/* CLOSE SUPPORT */
+supportClose.onclick = ()=>supportPopup.classList.remove("open");
+
+/* SEND MESSAGE */
+supportSend.onclick = async ()=>{
+  if(!supportText.value.trim()) return;
+  await db.collection("supportChat").add({
+    user:getUserId(),
+    message:supportText.value.trim(),
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  supportText.value = "";
+};
+
+/* LOAD MESSAGES IN REAL TIME */
+db.collection("supportChat").orderBy("timestamp")
+.onSnapshot(snapshot=>{
+  supportMessages.innerHTML="";
+  snapshot.forEach(doc=>{
+    const data = doc.data();
+    const div = document.createElement("div");
+    div.className = "msg "+(data.user===getUserId()?"userMsg":"adminMsg");
+    div.textContent = data.message;
+    supportMessages.appendChild(div);
+  });
+  supportMessages.scrollTop = supportMessages.scrollHeight;
+});
+</script>
+</body>
+</html>
