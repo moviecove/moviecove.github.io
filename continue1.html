@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Continue Watching</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+}
+body.light{background:#f4f4f4;color:#000}
+
+/* HEADER */
+header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px;
+}
+#logo{color:#e50914;font-size:22px;font-weight:bold}
+#title{font-size:20px}
+#userEmail{margin-left:auto;font-size:14px;opacity:.8}
+
+/* GRID */
+#list{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  padding:12px;
+}
+
+.card{
+  cursor:pointer;
+  position:relative;
+}
+
+.card img{
+  width:100%;
+  border-radius:10px;
+}
+
+.card h4{
+  font-size:14px;
+  margin:6px 0 0;
+}
+
+/* DELETE BUTTON */
+.delete{
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:rgba(0,0,0,.7);
+  color:#fff;
+  padding:6px;
+  border-radius:50%;
+  font-size:14px;
+}
+
+/* PLAYER */
+#playerBox{
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:none;
+  z-index:9999;
+}
+
+#playerHeader{
+  display:flex;
+  align-items:center;
+  padding:8px;
+  background:#111;
+}
+
+#playerHeader span{
+  color:#e50914;
+  font-weight:bold;
+}
+
+#playerTitle{
+  margin-left:10px;
+  font-size:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#playerHeader div{margin-left:auto;}
+
+#playerHeader button{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:20px;
+  margin-left:10px;
+}
+
+#playerBox iframe{
+  width:100%;
+  height:calc(100% - 40px);
+  border:none;
+}
+
+/* MINIMIZED */
+.minimized{
+  width:75vw;
+  height:42vw;
+  max-height:75vh;
+  inset:auto 10px 80px auto;
+  cursor:move;
+}
+/* LOGO PLACEHOLDERS */
+#logo{
+  height:40px;
+}
+
+#playerLogo{
+  height:28px;
+}
+
+/* NAV */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#111;
+  display:flex;
+  justify-content:space-around;
+  padding:10px 0;
+}
+nav a{color:#fff;text-decoration:none}
+nav i{font-size:20px}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="logo.png" id="logo" alt="Logo">
+  <div id="title">Watch History</div>
+  <div id="userEmail"></div>
+</header>
+
+<div id="list"></div>
+
+<!-- PLAYER -->
+<div id="playerBox">
+  <div id="playerHeader">
+    <img src="logo.png" id="playerLogo" alt="Logo">
+    <div id="playerTitle"></div>
+    <div>
+      <button id="minBtn"><i class="fa-solid fa-minus"></i></button>
+      <button id="closeBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <iframe id="playerFrame" allowfullscreen></iframe>
+</div>
+
+<nav>
+  <a href="home.html"><i class="fa-solid fa-house"></i></a>
+  <a href="continue1.html"><i class="fa-solid fa-video"></i></a>
+  <a href="settings1.html"><i class="fa-solid fa-gear"></i></a>
+  <a href="#" id="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+</nav>
+
+<script>
+/* THEME */
+if(localStorage.getItem("theme")==="light"){
+  document.body.classList.add("light");
+}
+
+/* AUTH */
+const email = localStorage.getItem("userEmail");
+if(localStorage.getItem("loggedIn")!=="yes" || !email){
+  location.href="login.html";
+}
+document.getElementById("userEmail").textContent=email;
+
+/* CONTINUE DATA */
+const key="continue_"+email;
+const listDiv=document.getElementById("list");
+
+/* PLAYER */
+const playerBox=document.getElementById("playerBox");
+const frame=document.getElementById("playerFrame");
+const playerTitle=document.getElementById("playerTitle");
+
+/* LOAD */
+function loadContinue(){
+  listDiv.innerHTML="";
+  const data=JSON.parse(localStorage.getItem(key)||"[]");
+
+  if(!data.length){
+    listDiv.innerHTML="<p>No movies yet</p>";
+    return;
+  }
+
+  data.forEach((m,i)=>{
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <img src="${m.thumbnail}">
+      <h4>${m.title}</h4>
+      <div class="delete"><i class="fa-solid fa-trash"></i></div>
+    `;
+
+    card.onclick=()=>play(m.videoId,m.title);
+
+    card.querySelector(".delete").onclick=e=>{
+      e.stopPropagation();
+      if(confirm("Remove from Continue Watching?")){
+        data.splice(i,1);
+        localStorage.setItem(key,JSON.stringify(data));
+        loadContinue();
+      }
+    };
+
+    listDiv.appendChild(card);
+  });
+}
+
+/* PLAY */
+function play(id,title){
+  playerTitle.textContent=title;
+  frame.src="https://www.youtube.com/embed/"+id+"?autoplay=1&controls=0";
+  playerBox.style.display="block";
+  playerBox.classList.remove("minimized");
+}
+
+/* CONTROLS */
+closeBtn.onclick=()=>{
+  frame.src="";
+  playerBox.style.display="none";
+};
+minBtn.onclick=()=>playerBox.classList.toggle("minimized");
+
+/* DRAG */
+let drag=false,ox=0,oy=0;
+playerBox.onmousedown=e=>{
+  if(!playerBox.classList.contains("minimized"))return;
+  drag=true;ox=e.offsetX;oy=e.offsetY;
+};
+document.onmousemove=e=>{
+  if(!drag)return;
+  playerBox.style.left=e.pageX-ox+"px";
+  playerBox.style.top=e.pageY-oy+"px";
+};
+document.onmouseup=()=>drag=false;
+
+/* LOGOUT */
+logout.onclick=()=>{
+  localStorage.clear();
+  location.href="login.html";
+};
+
+loadContinue();
+</script>
+
+</body>
+</html>
