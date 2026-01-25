@@ -5,128 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MovieCove</title>
 
-<!-- BASIC META -->
-<meta name="title" content="MovieCove - Stream Movies Online">
-<meta name="description" content="MovieCove is a streaming platform to discover and watch movies online.">
-<meta name="keywords" content="movies, streaming, MovieCove">
-<meta name="author" content="MovieCove">
-
-<!-- THEME -->
 <meta name="theme-color" content="#e50914">
-
-<!-- OPEN GRAPH -->
-<meta property="og:title" content="MovieCove – Stream Movies Online">
-<meta property="og:description" content="Discover and stream movies on MovieCove.">
-<meta property="og:image" content="https://moviecove.github.io/assets/logo/logo.png">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 body{margin:0;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif}
-body.light{background:#f4f4f4;color:#000}
-
-header{
-  position:sticky;top:0;z-index:1000;
-  display:flex;align-items:center;gap:15px;
-  padding:12px 20px;background:#111
-}
+header{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:15px;padding:12px 20px;background:#111}
 #logo{height:70px}
-#siteName{
-  font-size:26px;font-weight:bold;
-  background:linear-gradient(90deg,#e50914,#ff4500);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent
-}
+#siteName{font-size:26px;font-weight:bold;background:linear-gradient(90deg,#e50914,#ff4500);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #userEmail{margin-left:auto;font-size:14px;opacity:.8}
-
-#searchBox{
-  width:calc(100% - 40px);
-  margin:12px 20px;
-  padding:12px;font-size:16px;
-  border-radius:6px;border:none;outline:none
-}
-
-#movies{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;padding:12px 20px
-}
-
-.movie{
-  background:#111;border-radius:10px;
-  overflow:hidden;cursor:pointer;
-  position:relative;transition:.2s
-}
+#searchBox{width:calc(100% - 40px);margin:12px 20px;padding:12px;font-size:16px;border-radius:6px;border:none}
+#movies{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;padding:12px 20px}
+.movie{background:#111;border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:.2s}
 .movie:hover{transform:scale(1.05)}
 .movie img{width:100%;display:block}
 .movie h4{font-size:14px;margin:6px 8px}
-
-.rating{
-  position:absolute;top:8px;right:8px;
-  background:rgba(0,0,0,.7);
-  color:#ffd700;padding:2px 6px;
-  font-size:12px;border-radius:4px
-}
-
-.download-btn{
-  position:absolute;bottom:8px;left:8px;
-  background:#e50914;color:#fff;
-  border:none;padding:4px 8px;
-  font-size:11px;border-radius:4px;
-  display:none
-}
+.rating{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:#ffd700;padding:2px 6px;font-size:12px;border-radius:4px}
+.download-btn{position:absolute;bottom:8px;left:8px;background:#e50914;color:#fff;border:none;padding:4px 8px;font-size:11px;border-radius:4px;display:none}
 .download-btn.visible{display:block}
-
-#playerBox{
-  position:fixed;inset:0;
-  background:#000;display:none;
-  z-index:9999
-}
-#playerHeader{
-  display:flex;align-items:center;
-  background:#111;padding:8px
-}
+#playerBox{position:fixed;inset:0;background:#000;display:none;z-index:9999}
+#playerHeader{display:flex;align-items:center;background:#111;padding:8px}
 #playerHeader span{color:#e50914;font-weight:bold}
 #playerHeader div{margin-left:auto}
-#playerHeader button{
-  background:none;border:none;
-  color:#fff;font-size:20px
-}
-#playerBox iframe{
-  width:100%;
-  height:calc(100% - 40px);
-  border:none
-}
-.minimized{
-  width:75vw;height:42vw;
-  inset:auto 10px 80px auto;
-  cursor:move
-}
-
-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:#111;display:flex;
-  justify-content:space-around;padding:10px 0
-}
+#playerHeader button{background:none;border:none;color:#fff;font-size:20px}
+#playerBox iframe{width:100%;height:calc(100% - 40px);border:none}
+.minimized{width:75vw;height:42vw;inset:auto 10px 80px auto}
+nav{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0}
 nav a{color:#fff}
-
-footer{
-  text-align:center;padding:12px;
-  background:#111;color:#777
-}
+footer{text-align:center;padding:12px;background:#111;color:#777}
 </style>
 </head>
 
 <body>
 
-<header id="mainHeader">
+<header>
   <img src="logo.png" id="logo">
   <div id="siteName">MovieCove</div>
   <div id="userEmail">Not logged in</div>
 </header>
 
 <input id="searchBox" placeholder="Search movies or series...">
-
 <div id="movies"></div>
 
 <div id="playerBox">
@@ -147,9 +66,7 @@ footer{
   <a href="#" id="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
 </nav>
 
-<footer>
-  © <span id="year"></span> MovieCove
-</footer>
+<footer>© MovieCove</footer>
 
 <script>
 const API_BASE = "https://apis.davidcyril.name.ng/cineverse";
@@ -163,37 +80,30 @@ const minBtn = document.getElementById("minBtn");
 const logout = document.getElementById("logout");
 const userEmailDiv = document.getElementById("userEmail");
 
-document.getElementById("year").textContent = new Date().getFullYear();
-
 function isLoggedIn(){ return localStorage.getItem("loggedIn")==="yes"; }
 function getUserEmail(){ return localStorage.getItem("userEmail"); }
 userEmailDiv.textContent = isLoggedIn()?getUserEmail():"Not logged in";
 
-async function loadContent(query="trending"){
+async function loadContent(q="trending"){
   moviesDiv.innerHTML="Loading...";
-  try{
-    const res = await fetch(`${API_BASE}?q=${encodeURIComponent(query)}`);
-    const json = await res.json();
-    const items = json?.data?.data?.items || [];
-    moviesDiv.innerHTML="";
-    items.forEach(item=>{
-      if(!item.subjectId || !item.cover?.url) return;
-      const card=document.createElement("div");
-      card.className="movie";
-      card.innerHTML=`
-        <img src="${item.cover.url}">
-        <div class="rating">${item.imdbRatingValue || "N/A"} ★</div>
-        <h4>${item.title}</h4>
-        <button class="download-btn">Download</button>
-      `;
-      card.onclick=()=>playContent(item.subjectId);
-      moviesDiv.appendChild(card);
-      checkDownloadable(item.subjectId,card.querySelector(".download-btn"));
-    });
-  }catch(e){
-    moviesDiv.innerHTML="Failed to load movies";
-    console.error(e);
-  }
+  const res = await fetch(`${API_BASE}?q=${encodeURIComponent(q)}`);
+  const json = await res.json();
+  const items = json?.data?.data?.items || [];
+  moviesDiv.innerHTML="";
+  items.forEach(item=>{
+    if(!item.subjectId || !item.cover?.url) return;
+    const card=document.createElement("div");
+    card.className="movie";
+    card.innerHTML=`
+      <img src="${item.cover.url}">
+      <div class="rating">${item.imdbRatingValue || "N/A"} ★</div>
+      <h4>${item.title}</h4>
+      <button class="download-btn">Download</button>
+    `;
+    card.onclick=()=>playContent(item.subjectId);
+    moviesDiv.appendChild(card);
+    checkDownloadable(item.subjectId,card.querySelector(".download-btn"));
+  });
 }
 
 async function checkDownloadable(id,btn){
@@ -201,13 +111,19 @@ async function checkDownloadable(id,btn){
     const res=await fetch(`${API_BASE}/sources?info=${id}`);
     const json=await res.json();
     const downloads=json?.data?.data?.downloads||[];
-    if(downloads.length){
-      btn.classList.add("visible");
-      btn.onclick=e=>{
-        e.stopPropagation();
-        window.open(downloads[0].url,"_blank");
-      };
-    }
+    if(!downloads.length) return;
+
+    const best = downloads
+      .filter(d=>d.url)
+      .sort((a,b)=>(b.resolution||0)-(a.resolution||0))[0];
+
+    if(!best) return;
+
+    btn.classList.add("visible");
+    btn.onclick=e=>{
+      e.stopPropagation();
+      window.open(best.url,"_blank");
+    };
   }catch{}
 }
 
@@ -216,12 +132,32 @@ async function playContent(id){
     alert("Login required");
     return;
   }
+
   playerBox.style.display="block";
   frame.src="";
-  const res=await fetch(`${API_BASE}/sources?info=${id}`);
-  const json=await res.json();
-  const best=json?.data?.data?.downloads?.[0];
-  if(best?.url) frame.src=best.url+"?autoplay=1";
+
+  try{
+    const res=await fetch(`${API_BASE}/sources?info=${id}`);
+    const json=await res.json();
+    const data=json?.data?.data;
+
+    const stream =
+      data?.watch ||
+      data?.stream ||
+      data?.embed;
+
+    if(!stream){
+      alert("No stream available");
+      closeBtn.click();
+      return;
+    }
+
+    frame.src = stream;
+
+  }catch{
+    alert("Failed to load stream");
+    closeBtn.click();
+  }
 }
 
 closeBtn.onclick=()=>{
@@ -231,11 +167,7 @@ closeBtn.onclick=()=>{
 minBtn.onclick=()=>playerBox.classList.toggle("minimized");
 
 searchBox.oninput=()=>loadContent(searchBox.value||"trending");
-
-logout.onclick=()=>{
-  localStorage.clear();
-  location.reload();
-};
+logout.onclick=()=>{localStorage.clear();location.reload();};
 
 loadContent();
 </script>
