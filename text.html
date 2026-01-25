@@ -244,6 +244,8 @@ if (localStorage.getItem("theme") === "light") {
 }
 
 const API_BASE = "https://apis.davidcyril.name.ng/cineverse";
+const PROXY = "https://api.allorigins.win/raw?url=";
+
 const moviesDiv = document.getElementById("movies");
 const searchBox = document.getElementById("searchBox");
 const playerBox = document.getElementById("playerBox");
@@ -255,15 +257,16 @@ function isLoggedIn() { return localStorage.getItem("loggedIn") === "yes"; }
 function getUserEmail() { return localStorage.getItem("userEmail"); }
 userEmailDiv.textContent = isLoggedIn() ? getUserEmail() : "Not logged in";
 
-async function loadContent(query = "trending") {  // Changed to "trending" for Netflix-style homepage
+async function loadContent(query = "trending") {
   moviesDiv.innerHTML = "<p style='padding:12px'>Loading...</p>";
   try {
-    const res = await fetch(`\( {API_BASE}?q= \){encodeURIComponent(query)}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const url = `\( {API_BASE}?q= \){encodeURIComponent(query)}`;
+    const res = await fetch(PROXY + encodeURIComponent(url));
+    if (!res.ok) throw new Error(`Proxy or server returned ${res.status}`);
     const json = await res.json();
 
     if (!json.success || !json.data?.data?.items?.length) {
-      moviesDiv.innerHTML = "<p style='padding:12px'>No content available</p>";
+      moviesDiv.innerHTML = "<p style='padding:12px'>No content found</p>";
       return;
     }
 
@@ -295,14 +298,15 @@ async function loadContent(query = "trending") {  // Changed to "trending" for N
       moviesDiv.appendChild(card);
     });
   } catch (err) {
-    moviesDiv.innerHTML = `<p style='padding:12px;color:red'>Error loading content: ${err.message}</p>`;
-    console.error(err);
+    moviesDiv.innerHTML = `<p style='padding:12px;color:red'>Error loading: ${err.message}</p>`;
+    console.error("Fetch error details:", err);
   }
 }
 
 async function checkDownloadable(id, btn) {
   try {
-    const res = await fetch(`\( {API_BASE}/sources?info= \){id}`);
+    const url = `\( {API_BASE}/sources?info= \){id}`;
+    const res = await fetch(PROXY + encodeURIComponent(url));
     if (!res.ok) return;
     const json = await res.json();
     if (json.success && json.data?.data?.downloads?.length > 0) {
@@ -317,30 +321,6 @@ async function checkDownloadable(id, btn) {
   } catch {}
 }
 
-let timeout;
-searchBox.addEventListener("input", () => {
-  clearTimeout(timeout);
-  const q = searchBox.value.trim();
-  timeout = setTimeout(() => loadContent(q || "trending"), 500);
-});
-
-let trackTimer = null;
-function startTracking(id, title, thumb) {
-  if (!isLoggedIn()) return;
-  const key = "continue_" + getUserEmail();
-  const entry = { id, title, thumb, date: Date.now() };
-  trackTimer = setInterval(() => {
-    let list = JSON.parse(localStorage.getItem(key) || "[]");
-    list = list.filter(e => e.id !== id);
-    list.unshift(entry);
-    localStorage.setItem(key, JSON.stringify(list));
-  }, 5000);
-}
-function stopTracking() {
-  if (trackTimer) clearInterval(trackTimer);
-  trackTimer = null;
-}
-
 async function playContent(id, title, thumb, isSeries = false) {
   if (!isLoggedIn()) {
     alert("Please login to watch");
@@ -352,7 +332,6 @@ async function playContent(id, title, thumb, isSeries = false) {
   searchBox.style.top = "-100px";
   playerBox.style.display = "block";
   playerBox.classList.remove("minimized");
-  startTracking(id, title, thumb);
 
   frame.src = "";
 
@@ -360,13 +339,12 @@ async function playContent(id, title, thumb, isSeries = false) {
     let url = `\( {API_BASE}/sources?info= \){id}`;
     if (isSeries) url += "&season=1&episode=1";
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Sources HTTP ${res.status}`);
+    const res = await fetch(PROXY + encodeURIComponent(url));
+    if (!res.ok) throw new Error(`Sources failed: ${res.status}`);
     const json = await res.json();
 
-    if (!json.success || json.data?.data?.hasResource === false || 
-        (!json.data?.data?.downloads?.length)) {
-      alert("No streams available for this title right now.");
+    if (!json.success || !json.data?.data?.downloads?.length) {
+      alert("No playable streams available for this title.");
       closePlayer();
       return;
     }
@@ -376,7 +354,7 @@ async function playContent(id, title, thumb, isSeries = false) {
     if (best.url) {
       frame.src = best.url + "?autoplay=1";
     } else {
-      alert("No valid link.");
+      alert("No valid stream link.");
       closePlayer();
     }
   } catch (err) {
@@ -386,7 +364,6 @@ async function playContent(id, title, thumb, isSeries = false) {
 }
 
 function closePlayer() {
-  stopTracking();
   frame.src = "";
   playerBox.style.display = "none";
   mainHeader.style.top = "0";
@@ -422,5 +399,6 @@ loadContent();  // Starts with trending homepage
 <footer id="footer">
   © <span id="year"></span> MovieCove. All Rights Reserved.
 </footer>
+
 </body>
-</html>
+  </html>
