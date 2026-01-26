@@ -6,72 +6,117 @@
 <title>MovieCove</title>
 
 <meta name="theme-color" content="#e50914">
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 body{margin:0;background:#000;color:#fff;font-family:Arial}
-header{padding:12px 20px;background:#111;display:flex;align-items:center;gap:15px;position:sticky;top:0;z-index:10}
+header{
+  background:#111;
+  padding:12px 20px;
+  display:flex;
+  align-items:center;
+  gap:15px;
+  position:sticky;
+  top:0;
+  z-index:10
+}
 #logo{height:50px}
-#siteName{font-size:24px;font-weight:bold;color:#e50914}
+#siteName{font-size:24px;color:#e50914;font-weight:bold}
 #userEmail{margin-left:auto;font-size:13px;opacity:.8}
 
-#searchBox{width:calc(100% - 40px);margin:12px 20px;padding:12px;font-size:16px;border-radius:6px;border:none}
-
-#movies{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;padding:12px 20px}
-
-.movie{background:#111;border-radius:10px;overflow:hidden;cursor:pointer;position:relative}
-.movie img{width:100%;display:block}
-.movie h4{font-size:14px;margin:6px 8px}
-.rating{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);padding:2px 6px;font-size:12px;border-radius:4px}
-
-/* PLAYER */
-#playerBox{
-  display:none;
+#searchBox{
+  width:calc(100% - 40px);
+  margin:12px 20px;
   padding:12px;
-  background:#000;
+  border-radius:6px;
+  border:none;
+  font-size:16px
 }
 
-#playerCard{
+#movies{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  padding:12px 20px
+}
+.movie{
   background:#111;
   border-radius:10px;
   overflow:hidden;
+  cursor:pointer;
+  position:relative
+}
+.movie img{width:100%}
+.movie h4{font-size:14px;margin:6px 8px}
+.rating{
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:rgba(0,0,0,.7);
+  padding:2px 6px;
+  font-size:12px;
+  border-radius:4px
 }
 
-#playerHeader{
+/* MODAL PLAYER */
+#overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.9);
+  display:none;
+  z-index:9999;
+  overflow-y:auto
+}
+
+#modal{
+  max-width:900px;
+  margin:20px auto;
+  background:#111;
+  border-radius:10px;
+  overflow:hidden
+}
+
+#modalHeader{
   display:flex;
   align-items:center;
-  padding:8px;
-  background:#000;
+  padding:10px;
+  background:#000
 }
-
-#playerHeader img{height:30px}
-#nowTitle{margin-left:10px;font-size:14px;flex:1}
-#playerHeader button{
-  background:none;border:none;color:#fff;font-size:18px
+#modalHeader img{height:30px}
+#modalTitle{margin-left:10px;font-size:15px;flex:1}
+#modalHeader button{
+  background:none;border:none;color:#fff;font-size:20px
 }
 
 video{
   width:100%;
-  max-height:55vh;
-  background:#000;
+  max-height:60vh;
+  background:#000
 }
 
-#movieInfo{
-  padding:10px;
+#details{
+  padding:12px;
+  font-size:14px;
+  color:#ccc
+}
+
+#cast{
+  margin-top:10px;
   font-size:13px;
-  color:#ccc;
+  opacity:.9
 }
 
 #downloadBtn{
-  display:none;
-  margin:10px;
-  padding:10px;
-  width:calc(100% - 20px);
+  width:100%;
+  padding:12px;
   background:#e50914;
   border:none;
   color:#fff;
+  font-size:15px;
+  margin-top:12px;
   border-radius:6px;
-  font-size:14px;
+  display:none
 }
 
 nav{
@@ -80,7 +125,7 @@ nav{
   background:#111;
   display:flex;
   justify-content:space-around;
-  padding:10px 0;
+  padding:10px 0
 }
 nav a{color:#fff;font-size:20px}
 </style>
@@ -95,22 +140,24 @@ nav a{color:#fff;font-size:20px}
 </header>
 
 <input id="searchBox" placeholder="Search movies...">
-
 <div id="movies"></div>
 
-<!-- PLAYER -->
-<div id="playerBox">
-  <div id="playerCard">
-    <div id="playerHeader">
+<!-- PLAYER MODAL -->
+<div id="overlay">
+  <div id="modal">
+    <div id="modalHeader">
       <img src="logo.png">
-      <div id="nowTitle">Now Playing</div>
-      <button onclick="closePlayer()">✖</button>
+      <div id="modalTitle">Now Playing</div>
+      <button onclick="closeModal()">✖</button>
     </div>
 
     <video id="video" controls playsinline></video>
 
-    <div id="movieInfo">Loading...</div>
-    <button id="downloadBtn">Download</button>
+    <div id="details">
+      <div id="desc">Loading...</div>
+      <div id="cast"></div>
+      <button id="downloadBtn">Download</button>
+    </div>
   </div>
 </div>
 
@@ -123,16 +170,17 @@ nav a{color:#fff;font-size:20px}
 <script>
 const API="https://apis.davidcyril.name.ng/cineverse";
 const movies=document.getElementById("movies");
+const overlay=document.getElementById("overlay");
 const video=document.getElementById("video");
-const player=document.getElementById("playerBox");
-const titleBox=document.getElementById("nowTitle");
-const infoBox=document.getElementById("movieInfo");
+const titleBox=document.getElementById("modalTitle");
+const desc=document.getElementById("desc");
+const castBox=document.getElementById("cast");
 const downloadBtn=document.getElementById("downloadBtn");
-const userEmailDiv=document.getElementById("userEmail");
+const userEmail=document.getElementById("userEmail");
 
-function isLoggedIn(){return localStorage.getItem("loggedIn")==="yes";}
-function getEmail(){return localStorage.getItem("userEmail");}
-userEmailDiv.textContent=isLoggedIn()?getEmail():"Not logged in";
+function isLoggedIn(){return localStorage.getItem("loggedIn")==="yes"}
+function email(){return localStorage.getItem("userEmail")}
+userEmail.textContent=isLoggedIn()?email():"Not logged in";
 
 async function loadMovies(q="latest"){
   movies.innerHTML="Loading...";
@@ -149,7 +197,7 @@ async function loadMovies(q="latest"){
       <div class="rating">${m.imdbRatingValue||"N/A"}★</div>
       <h4>${m.title}</h4>
     `;
-    d.addEventListener("click",()=>openMovie(m));
+    d.onclick=()=>openMovie(m);
     movies.appendChild(d);
   });
 }
@@ -160,51 +208,48 @@ async function openMovie(m){
     return;
   }
 
-  player.style.display="block";
-  player.scrollIntoView({behavior:"smooth"});
-
+  overlay.style.display="block";
   titleBox.textContent=m.title;
-  infoBox.textContent="Loading...";
+  desc.textContent="Loading stream...";
+  castBox.textContent="";
   downloadBtn.style.display="none";
 
-  const res=await fetch(`${API}/sources?info=${m.subjectId}`);
-  const json=await res.json();
-  const data=json?.data?.data;
-
-  const srcs=
-    data?.processedSources?.length?data.processedSources:
-    data?.streams?.length?data.streams:
-    data?.sources?.length?data.sources:[];
-
-  if(!srcs.length){
-    infoBox.textContent="Coming soon";
-    video.removeAttribute("src");
-    video.load();
-    return;
-  }
-
-  const best=srcs[srcs.length-1];
-  infoBox.textContent=m.description||"";
-
-  video.pause();
-  video.src=best.streamUrl||best.url;
-  video.load();
-
-  video.onloadedmetadata=()=>{
-    video.play().catch(()=>{});
-  };
-
-  if(best.downloadUrl){
-    downloadBtn.style.display="block";
-    downloadBtn.onclick=()=>window.open(best.downloadUrl,"_blank");
-  }
-}
-
-function closePlayer(){
   video.pause();
   video.removeAttribute("src");
   video.load();
-  player.style.display="none";
+
+  const res=await fetch(`${API}/sources?info=${m.subjectId}`);
+  const json=await res.json();
+  const sources=json?.data?.data?.processedSources||[];
+
+  let played=false;
+
+  for(const s of sources){
+    try{
+      video.src=s.streamUrl||s.url;
+      await video.play();
+      played=true;
+
+      desc.textContent=m.description||"";
+      castBox.textContent=m.cast?.join(", ")||"";
+      if(s.downloadUrl){
+        downloadBtn.style.display="block";
+        downloadBtn.onclick=()=>window.open(s.downloadUrl,"_blank");
+      }
+      break;
+    }catch(e){}
+  }
+
+  if(!played){
+    desc.textContent="Coming soon";
+  }
+}
+
+function closeModal(){
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+  overlay.style.display="none";
 }
 
 searchBox.oninput=()=>loadMovies(searchBox.value||"latest");
@@ -212,4 +257,4 @@ loadMovies("latest");
 </script>
 
 </body>
-</html>
+  </html>
