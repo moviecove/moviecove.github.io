@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MovieCove – Stream Movies</title>
+
+<!-- META -->
+<meta name="description" content="MovieCove – Stream latest and popular movies online">
+<meta name="keywords" content="movies, streaming, MovieCove, latest movies">
+<meta name="theme-color" content="#e50914">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial}
+header{position:sticky;top:0;z-index:1000;background:#111;padding:12px 20px;display:flex;align-items:center;gap:12px}
+#logo{height:55px}
+#siteName{font-size:24px;font-weight:bold;color:#e50914}
+#userEmail{margin-left:auto;font-size:13px;opacity:.8}
+
+#searchBox{width:calc(100% - 40px);margin:12px 20px;padding:12px;border-radius:6px;border:none;font-size:16px}
+
+#movies{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;padding:12px 20px}
+
+.movie{background:#111;border-radius:10px;overflow:hidden;cursor:pointer;position:relative}
+.movie img{width:100%}
+.movie h4{font-size:14px;margin:6px 8px}
+.rating{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);padding:2px 6px;font-size:12px}
+
+nav{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0}
+nav a{color:#fff;font-size:20px}
+
+/* PLAYER BOX */
+#playerBox{
+  position:fixed;
+  right:10px;
+  bottom:70px;
+  width:92%;
+  max-width:420px;
+  background:#000;
+  border-radius:12px;
+  display:none;
+  z-index:9999;
+  box-shadow:0 0 20px rgba(0,0,0,.8)
+}
+
+#playerHeader{
+  background:#111;
+  padding:8px;
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+
+#playerHeader img{height:30px}
+#playerTitle{font-size:14px;font-weight:bold;flex:1}
+
+#playerHeader button{
+  background:none;border:none;color:#fff;font-size:18px
+}
+
+video{width:100%;height:220px;background:#000}
+
+#playerInfo{padding:10px;font-size:13px}
+#playerInfo p{opacity:.8}
+
+#episodeList button{
+  background:#222;
+  border:none;
+  color:#fff;
+  padding:6px 8px;
+  margin:4px 4px 0 0;
+  border-radius:4px;
+  font-size:12px
+}
+
+#downloadBtn{
+  margin-top:10px;
+  background:#e50914;
+  border:none;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:6px;
+  font-size:14px
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="logo.png" id="logo">
+  <div id="siteName">MovieCove</div>
+  <div id="userEmail">Not logged in</div>
+</header>
+
+<input id="searchBox" placeholder="Search movies...">
+<div id="movies"></div>
+
+<!-- PLAYER -->
+<div id="playerBox">
+  <div id="playerHeader">
+    <img src="logo.png">
+    <div id="playerTitle">Now Playing</div>
+    <button onclick="closePlayer()">✖</button>
+  </div>
+
+  <video id="video" controls></video>
+
+  <div id="playerInfo">
+    <p id="movieDesc"></p>
+    <div id="episodeList"></div>
+    <button id="downloadBtn">Download</button>
+  </div>
+</div>
+
+<nav>
+  <a href="home.html"><i class="fa-solid fa-house"></i></a>
+  <a href="continue1.html"><i class="fa-solid fa-video"></i></a>
+  <a href="settings1.html"><i class="fa-solid fa-gear"></i></a>
+</nav>
+
+<script>
+const API="https://apis.davidcyril.name.ng/cineverse";
+const movies=document.getElementById("movies");
+const video=document.getElementById("video");
+const player=document.getElementById("playerBox");
+const playerTitle=document.getElementById("playerTitle");
+const movieDesc=document.getElementById("movieDesc");
+const episodeList=document.getElementById("episodeList");
+const downloadBtn=document.getElementById("downloadBtn");
+const userEmail=document.getElementById("userEmail");
+
+function isLoggedIn(){ return localStorage.getItem("loggedIn")==="yes"; }
+function getEmail(){ return localStorage.getItem("userEmail"); }
+
+userEmail.textContent=isLoggedIn()?getEmail():"Not logged in";
+
+async function loadMovies(q="latest"){
+  movies.innerHTML="Loading...";
+  const res=await fetch(`${API}?q=${q}`);
+  const json=await res.json();
+  const items=json?.data?.data?.items||[];
+  movies.innerHTML="";
+  items.forEach(m=>{
+    const d=document.createElement("div");
+    d.className="movie";
+    d.innerHTML=`
+      <img src="${m.cover?.url}">
+      <div class="rating">${m.imdbRatingValue||"N/A"}★</div>
+      <h4>${m.title}</h4>
+    `;
+    d.onclick=()=>openMovie(m);
+    movies.appendChild(d);
+  });
+}
+
+async function openMovie(m){
+  if(!isLoggedIn()){
+    location.href="login.html";
+    return;
+  }
+
+  playerTitle.textContent=m.title;
+  movieDesc.textContent=m.description||"";
+  episodeList.innerHTML="";
+
+  const res=await fetch(`${API}/sources?info=${m.subjectId}`);
+  const json=await res.json();
+  const srcs=json?.data?.data?.processedSources;
+
+  if(!srcs?.length){
+    movieDesc.textContent="Coming soon...";
+    video.src="";
+    downloadBtn.style.display="none";
+  }else{
+    const best=srcs[srcs.length-1];
+    video.src=best.streamUrl;
+    downloadBtn.style.display="block";
+    downloadBtn.onclick=()=>window.open(best.downloadUrl,"_blank");
+  }
+
+  player.style.display="block";
+}
+
+function closePlayer(){
+  video.pause();
+  video.src="";
+  player.style.display="none";
+}
+
+searchBox.oninput=()=>loadMovies(searchBox.value||"latest");
+loadMovies("latest");
+</script>
+
+</body>
+</html>
