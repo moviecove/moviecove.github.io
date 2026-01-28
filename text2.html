@@ -196,6 +196,18 @@ video{
 </div>
 
 <script>
+/* 🔐 LOGIN PROTECTION */
+if(localStorage.getItem("loggedIn")!=="yes"){
+  location.href="login.html";
+}
+
+/* USER NAME */
+const email=localStorage.getItem("userEmail");
+if(email){
+  document.getElementById("username").textContent=
+    email.split("@")[0];
+  }
+  
 const BACKEND="https://moviecove-backend.onrender.com";
 const TOKEN="moviecove_secure_token_08166704020_tony";
 
