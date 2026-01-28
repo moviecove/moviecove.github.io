@@ -1,128 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MovieCove</title>
 
+<meta name="theme-color" content="#000000">
+
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: #000;
-  color: #fff;
-  font-family: system-ui, sans-serif;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family:system-ui,Arial;
 }
 
 /* HEADER */
-header {
-  padding: 10px 14px;
-  background: #000;
+header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:#111;
+  padding:12px 16px;
+  display:flex;
+  align-items:center;
 }
-header img {
-  height: 32px;
-}
+header img{height:36px}
 
 /* SEARCH */
-.search-box {
-  padding: 12px;
-}
-.search-box input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
+#search{
+  width:calc(100% - 32px);
+  margin:12px 16px;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  font-size:15px;
 }
 
 /* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  padding: 12px;
+#movies{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  padding:12px 16px 90px;
 }
-.card {
-  cursor: pointer;
+
+.movie{
+  cursor:pointer;
 }
-.card img {
-  width: 100%;
-  border-radius: 8px;
+.poster{
+  position:relative;
+  border-radius:10px;
+  overflow:hidden;
 }
-.card-title {
-  font-size: 13px;
-  margin-top: 6px;
-  text-align: center;
+.poster img{
+  width:100%;
+  aspect-ratio:2/3;
+  object-fit:cover;
+  background:#222;
+}
+.rating{
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:rgba(0,0,0,.7);
+  font-size:11px;
+  padding:3px 6px;
+  border-radius:4px;
+}
+.movie h4{
+  font-size:13px;
+  margin:6px 2px 0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* SKELETON */
+.skeleton{
+  animation:pulse 1.4s infinite;
+  background:#222;
+}
+@keyframes pulse{
+  0%{opacity:.4}
+  50%{opacity:.8}
+  100%{opacity:.4}
 }
 
 /* PLAYER */
-#playerSection {
-  display: none;
-  padding: 12px;
+#player{
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:none;
+  z-index:9999;
+  overflow:auto;
 }
-.video-wrap {
-  position: relative;
+#playerCard{
+  max-width:900px;
+  margin:auto;
 }
-video {
-  width: 100%;
-  height: 65vh;
-  background: black;
+#playerHeader{
+  display:flex;
+  align-items:center;
+  padding:10px;
 }
-.watermark {
-  position: absolute;
-  top: 8%;
-  left: 5%;
-  width: 70px;
-  opacity: 0.4;
-  pointer-events: none;
-  animation: move 25s linear infinite;
+#playerHeader img{height:28px}
+#playerTitle{
+  flex:1;
+  margin-left:10px;
+  font-size:14px;
 }
-@keyframes move {
-  0% { transform: translate(0,0); }
-  25% { transform: translate(60vw,10vh); }
-  50% { transform: translate(30vw,40vh); }
-  75% { transform: translate(70vw,60vh); }
-  100% { transform: translate(0,0); }
+#close{
+  font-size:20px;
+  cursor:pointer;
 }
 
-.download-btn {
-  margin: 12px 0;
-  padding: 12px;
-  background: red;
-  color: white;
-  text-align: center;
-  border-radius: 6px;
-  text-decoration: none;
-  display: none;
+/* VIDEO */
+.videoWrap{
+  position:relative;
+  height:60vh;
+  background:#000;
+}
+video{
+  width:100%;
+  height:100%;
+}
+.watermark{
+  position:absolute;
+  top:12px;
+  left:12px;
+  height:32px;
+  opacity:.6;
+  pointer-events:none;
 }
 
 /* DETAILS */
-.section {
-  margin-top: 16px;
+#details{
+  padding:14px;
 }
-.section h3 {
-  margin-bottom: 6px;
+.sectionTitle{
+  margin-top:14px;
+  font-weight:bold;
 }
-.section p {
-  font-size: 14px;
-  line-height: 1.4;
+#download{
+  width:100%;
+  margin-top:14px;
+  padding:14px;
+  background:#e50914;
+  border:none;
+  color:#fff;
+  font-size:15px;
+  border-radius:8px;
 }
 
-/* EPISODES */
-.episodes button {
-  margin: 4px;
-  padding: 6px 10px;
-  border-radius: 5px;
-  border: none;
-}
-
-/* RECOMMEND */
-.recommend {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-}
-.recommend img {
-  height: 120px;
-  border-radius: 6px;
+@media(min-width:768px){
+  #movies{grid-template-columns:repeat(5,1fr)}
 }
 </style>
 </head>
@@ -130,117 +164,115 @@ video {
 <body>
 
 <header>
-  <img src="assets/logo.png" alt="MovieCove">
+  <img src="logo.png" alt="MovieCove">
 </header>
 
-<div class="search-box">
-  <input id="search" placeholder="Search movies..." />
-</div>
+<input id="search" placeholder="Search movies…">
 
-<div id="grid" class="grid"></div>
+<div id="movies"></div>
 
 <!-- PLAYER -->
-<div id="playerSection">
-  <div class="video-wrap">
-    <video id="video" controls></video>
-    <img src="assets/logo.png" class="watermark">
+<div id="player">
+  <div id="playerCard">
+    <div id="playerHeader">
+      <img src="logo.png">
+      <div id="playerTitle"></div>
+      <div id="close">✖</div>
+    </div>
+
+    <div class="videoWrap">
+      <video id="video" controls playsinline></video>
+      <img src="logo.png" class="watermark">
+    </div>
+
+    <div id="details">
+      <div id="description"></div>
+      <div id="cast"></div>
+      <div id="recommendations"></div>
+      <button id="download">Download</button>
+    </div>
   </div>
-
-  <a id="download" class="download-btn">Download</a>
-
-  <div id="summary" class="section"></div>
-  <div id="cast" class="section"></div>
-  <div id="episodes" class="section episodes"></div>
-  <div id="recommend" class="section"></div>
 </div>
 
 <script>
-const API = "https://moviecove-backend.onrender.com";
-const TOKEN = "moviecove_secure_token_08166704020_tony";
+const BACKEND="https://moviecove-backend.onrender.com";
+const TOKEN="moviecove_secure_token_08166704020_tony";
 
-const grid = document.getElementById("grid");
-const playerSection = document.getElementById("playerSection");
-const video = document.getElementById("video");
+const moviesBox=document.getElementById("movies");
+const player=document.getElementById("player");
+const video=document.getElementById("video");
+const titleBox=document.getElementById("playerTitle");
+const descBox=document.getElementById("description");
+const castBox=document.getElementById("cast");
+const recBox=document.getElementById("recommendations");
+const downloadBtn=document.getElementById("download");
 
-async function loadMovies(q="latest") {
-  const res = await fetch(`${API}/movies?q=${q}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
+/* LOAD MOVIES */
+async function loadMovies(q="latest"){
+  moviesBox.innerHTML="";
+  for(let i=0;i<9;i++){
+    const sk=document.createElement("div");
+    sk.innerHTML=`<div class="poster skeleton" style="aspect-ratio:2/3"></div>`;
+    moviesBox.appendChild(sk);
+  }
+
+  const r=await fetch(`${BACKEND}/movies?q=${encodeURIComponent(q)}`,{
+    headers:{Authorization:`Bearer ${TOKEN}`}
   });
-  const data = await res.json();
-  grid.innerHTML = "";
+  const j=await r.json();
+  moviesBox.innerHTML="";
 
-  data.items.forEach(m => {
-    if (!m.poster || !m.info) return;
-    const c = document.createElement("div");
-    c.className = "card";
-    c.innerHTML = `
-      <img src="${m.poster}">
-      <div class="card-title">${m.title}</div>
+  (j.items||[]).forEach(m=>{
+    const el=document.createElement("div");
+    el.className="movie";
+    el.innerHTML=`
+      <div class="poster">
+        <img src="${m.cover?.url||''}">
+        <div class="rating">${m.imdbRatingValue||"N/A"}★</div>
+      </div>
+      <h4>${m.title}</h4>
     `;
-    c.onclick = () => openMovie(m);
-    grid.appendChild(c);
+    el.onclick=()=>openMovie(m);
+    moviesBox.appendChild(el);
   });
 }
 
-async function openMovie(movie) {
-  playerSection.style.display = "block";
-  video.src = "";
+/* OPEN PLAYER */
+async function openMovie(m){
+  player.style.display="block";
+  titleBox.textContent=m.title;
+  descBox.innerHTML=m.description?`<div class="sectionTitle">Summary</div><p>${m.description}</p>`:"";
+  castBox.innerHTML=m.cast?`<div class="sectionTitle">Cast</div><p>${m.cast.join(", ")}</p>`:"";
+  recBox.innerHTML="";
   video.pause();
 
-  const res = await fetch(`${API}/stream?info=${movie.info}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
+  const r=await fetch(`${BACKEND}/stream?info=${m.subjectId}`,{
+    headers:{Authorization:`Bearer ${TOKEN}`}
   });
-  const data = await res.json();
-  if (!data.playable) return alert("No stream available");
+  const j=await r.json();
 
-  video.src = data.stream;
-
-  const dBtn = document.getElementById("download");
-  if (data.download) {
-    dBtn.style.display = "block";
-    dBtn.href = data.download;
+  if(!j.playable){
+    descBox.innerHTML="<p>This title is currently unavailable.</p>";
+    downloadBtn.style.display="none";
+    return;
   }
 
-  // SUMMARY
-  const s = document.getElementById("summary");
-  s.innerHTML = movie.description ? `<h3>Summary</h3><p>${movie.description}</p>` : "";
-
-  // CAST
-  const c = document.getElementById("cast");
-  c.innerHTML = movie.cast ? `<h3>Cast</h3><p>${movie.cast.join(", ")}</p>` : "";
-
-  // EPISODES
-  const e = document.getElementById("episodes");
-  e.innerHTML = "";
-  if (movie.seasons) {
-    e.innerHTML = "<h3>Episodes</h3>";
-    movie.seasons.forEach(season => {
-      season.episodes.forEach(ep => {
-        const b = document.createElement("button");
-        b.textContent = `S${season.season}E${ep.episode}`;
-        b.onclick = () => openEpisode(movie.info, season.season, ep.episode);
-        e.appendChild(b);
-      });
-    });
-  }
-
-  // RECOMMEND
-  const r = document.getElementById("recommend");
-  r.innerHTML = "<h3>Recommended</h3><div class='recommend'></div>";
-  loadMovies(movie.title.split(" ")[0]);
+  video.src=j.stream;
+  video.load();   // FIXES restart bug
+  downloadBtn.style.display="block";
+  downloadBtn.onclick=()=>window.open(j.download,"_blank");
 }
 
-async function openEpisode(info, s, e) {
-  const res = await fetch(`${API}/stream?info=${info}&season=${s}&episode=${e}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-  const data = await res.json();
-  video.src = data.stream;
-}
+/* CLOSE */
+document.getElementById("close").onclick=()=>{
+  video.pause();
+  video.src="";
+  player.style.display="none";
+};
 
-document.getElementById("search").oninput = e => loadMovies(e.target.value);
-
+search.oninput=()=>loadMovies(search.value||"latest");
 loadMovies();
 </script>
+
 </body>
-    </html>
+  </html>
