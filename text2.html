@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MovieCove</title>
 
 <style>
@@ -20,10 +20,8 @@ header{
   padding:12px;
   border-bottom:1px solid #222;
 }
-.logo{
-  font-size:20px;
-  font-weight:700;
-  color:#e50914;
+header img{
+  height:34px;
 }
 #userName{
   margin-left:auto;
@@ -35,7 +33,56 @@ header{
   text-overflow:ellipsis;
 }
 
-/* PLAYER */
+/* MOVIE GRID */
+#movies{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:12px;
+  padding:12px;
+}
+.movie{
+  cursor:pointer;
+}
+.movie img{
+  width:100%;
+  border-radius:10px;
+}
+.movie-title{
+  font-size:13px;
+  margin-top:6px;
+}
+
+/* PLAYER MODAL */
+#playerModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.95);
+  display:none;
+  flex-direction:column;
+  z-index:999;
+  overflow:auto;
+}
+
+/* PLAYER HEADER */
+#playerTop{
+  position:absolute;
+  top:10px;
+  left:10px;
+  right:10px;
+  display:flex;
+  align-items:center;
+  z-index:1000;
+}
+#playerTop img{
+  height:28px;
+}
+#closeBtn{
+  margin-left:auto;
+  font-size:22px;
+  cursor:pointer;
+}
+
+/* VIDEO */
 video{
   width:100%;
   height:55vh;
@@ -50,83 +97,47 @@ video{
   font-size:20px;
   font-weight:600;
 }
-
-/* SKELETON */
-.skeleton{
-  background:linear-gradient(90deg,#111,#222,#111);
-  background-size:200% 100%;
-  animation:shimmer 1.2s infinite;
-  border-radius:6px;
-}
-@keyframes shimmer{
-  from{background-position:200% 0}
-  to{background-position:-200% 0}
-}
-.sk-text{height:14px;margin:6px 0}
-.sk-title{height:22px;width:70%;margin-bottom:10px}
-
-/* SUMMARY */
 #summary{
-  margin-top:6px;
   font-size:14px;
-  line-height:1.4;
   opacity:.9;
+  margin:8px 0;
 }
 
 /* CAST */
-#castSection{
-  margin-top:14px;
-}
 #castGrid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
   gap:10px;
-}
-.castCard{
-  text-align:center;
 }
 .castCard img{
   width:100%;
   aspect-ratio:2/3;
   object-fit:cover;
   border-radius:8px;
-  background:#111;
 }
 .castName{
   font-size:12px;
-  margin-top:4px;
+  text-align:center;
   opacity:.85;
 }
 
-/* CONTROLS */
-#controls{
-  margin-top:12px;
-}
-select{
-  background:#111;
-  border:1px solid #333;
+/* BUTTON */
+button{
+  background:#e50914;
   color:#fff;
-  padding:8px;
+  border:none;
+  padding:10px;
   border-radius:6px;
+  font-weight:600;
+  margin:10px 0;
+  width:100%;
 }
 
-/* EPISODES */
-#episodes{
-  margin-top:16px;
-}
-.episode{
+/* EPISODES / RECOMMEND */
+.item{
   padding:10px;
   border-bottom:1px solid #222;
   cursor:pointer;
-}
-
-/* RECOMMENDATIONS */
-#recommendations{
-  margin-top:18px;
-}
-.reco{
-  padding:10px 0;
-  border-bottom:1px solid #222;
 }
 </style>
 </head>
@@ -134,149 +145,137 @@ select{
 <body>
 
 <header>
-  <div class="logo">MovieCove</div>
+  <img src="logo.png" alt="MovieCove">
   <div id="userName">Guest</div>
 </header>
 
-<video id="video" controls></video>
+<div id="movies"></div>
 
-<div id="info">
-  <div id="title" class="skeleton sk-title"></div>
-  <div id="summary">
-    <div class="skeleton sk-text"></div>
-    <div class="skeleton sk-text"></div>
-    <div class="skeleton sk-text" style="width:60%"></div>
+<!-- PLAYER MODAL -->
+<div id="playerModal">
+  <div id="playerTop">
+    <img src="logo.png" alt="MovieCove">
+    <div id="closeBtn" onclick="closePlayer()">✕</div>
   </div>
 
-  <div id="controls">
-    <select id="subtitleSelect" hidden></select>
-  </div>
+  <video id="video" controls></video>
 
-  <div id="castSection">
+  <div id="info">
+    <div id="title"></div>
+    <div id="summary"></div>
+
+    <button id="downloadBtn" hidden>Download</button>
+
     <h3>Cast</h3>
     <div id="castGrid"></div>
-  </div>
 
-  <div id="episodes"></div>
-  <div id="recommendations"></div>
+    <div id="episodes"></div>
+    <div id="recommendations"></div>
+  </div>
 </div>
 
 <script>
 const BACKEND="https://moviecove-backend.onrender.com";
-const API_TOKEN="moviecove_secure_token_08166704020_tony";
+const TOKEN="moviecove_secure_token_08166704020_tony";
 
 /* USER NAME */
 const email=localStorage.getItem("userEmail");
 if(email){
-  document.getElementById("userName").textContent =
-    email.split("@")[0];
+  document.getElementById("userName").textContent=email.split("@")[0];
 }
 
-/* LOAD STREAM */
-async function loadStream(info,season=null,episode=null){
-  resetUI();
+/* LOAD MOVIES */
+async function loadMovies(){
+  const res=await fetch(`${BACKEND}/movies?q=latest`,{
+    headers:{Authorization:`Bearer ${TOKEN}`}
+  });
+  const data=await res.json();
+  const box=document.getElementById("movies");
+
+  data.items.forEach(m=>{
+    const d=document.createElement("div");
+    d.className="movie";
+    d.innerHTML=`
+      <img src="${m.image}">
+      <div class="movie-title">${m.title}</div>
+    `;
+    d.onclick=()=>openPlayer(m.subjectId);
+    box.appendChild(d);
+  });
+}
+
+/* OPEN PLAYER */
+async function openPlayer(info,season=null,episode=null){
+  playerModal.style.display="flex";
 
   let url=`${BACKEND}/stream?info=${info}`;
   if(season && episode) url+=`&season=${season}&episode=${episode}`;
 
   const res=await fetch(url,{
-    headers:{Authorization:`Bearer ${API_TOKEN}`}
+    headers:{Authorization:`Bearer ${TOKEN}`}
   });
   const data=await res.json();
 
   if(!data.playable){
-    alert("Not playable");
+    alert("Stream not available");
+    closePlayer();
     return;
   }
 
-  document.getElementById("video").src=data.stream;
+  video.src=data.stream;
+  title.textContent=data.title || "";
+  summary.textContent=data.summary || "No description available.";
 
-  /* TITLE */
-  document.getElementById("title").className="";
-  document.getElementById("title").textContent=data.title || "";
+  /* DOWNLOAD */
+  if(data.download){
+    downloadBtn.hidden=false;
+    downloadBtn.onclick=()=>window.open(data.download,"_blank");
+  }else downloadBtn.hidden=true;
 
-  /* SUMMARY */
-  document.getElementById("summary").textContent =
-    data.summary || "No description available.";
-
-  /* SUBTITLES */
-  const sub=document.getElementById("subtitleSelect");
-  sub.innerHTML="";
-  if(data.subtitles?.length){
-    sub.hidden=false;
-    data.subtitles.forEach((s,i)=>{
-      const track=document.createElement("track");
-      track.kind="subtitles";
-      track.label=s.lang;
-      track.srclang=s.lang.slice(0,2);
-      track.src=s.url;
-      if(i===0) track.default=true;
-      video.appendChild(track);
-
-      const opt=document.createElement("option");
-      opt.value=i;
-      opt.textContent=s.lang;
-      sub.appendChild(opt);
-    });
-  }else sub.hidden=true;
-
-  /* CAST WITH PHOTOS */
-  const castGrid=document.getElementById("castGrid");
+  /* CAST */
   castGrid.innerHTML="";
-  if(data.cast?.length){
-    data.cast.forEach(c=>{
-      const card=document.createElement("div");
-      card.className="castCard";
-      card.innerHTML=`
-        <img src="${c.photo || 'https://via.placeholder.com/300x450?text=No+Image'}">
+  data.cast?.forEach(c=>{
+    castGrid.innerHTML+=`
+      <div class="castCard">
+        <img src="${c.photo || 'https://via.placeholder.com/300x450'}">
         <div class="castName">${c.name}</div>
-      `;
-      castGrid.appendChild(card);
-    });
-  }
+      </div>
+    `;
+  });
 
   /* EPISODES */
-  const epBox=document.getElementById("episodes");
-  epBox.innerHTML="";
+  episodes.innerHTML="";
   if(data.episodes){
-    data.episodes.forEach(ep=>{
+    data.episodes.forEach(e=>{
       const d=document.createElement("div");
-      d.className="episode";
-      d.textContent=`S${ep.season} • E${ep.episode} — ${ep.title}`;
-      d.onclick=()=>loadStream(info,ep.season,ep.episode);
-      epBox.appendChild(d);
+      d.className="item";
+      d.textContent=`S${e.season} E${e.episode} - ${e.title}`;
+      d.onclick=()=>openPlayer(info,e.season,e.episode);
+      episodes.appendChild(d);
     });
   }
 
   /* RECOMMENDATIONS */
-  const recoBox=document.getElementById("recommendations");
-  recoBox.innerHTML="";
+  recommendations.innerHTML="";
   if(!data.episodes && data.recommendations){
     data.recommendations.forEach(r=>{
       const d=document.createElement("div");
-      d.className="reco";
+      d.className="item";
       d.textContent=r.title;
-      d.onclick=()=>loadStream(r.info);
-      recoBox.appendChild(d);
+      d.onclick=()=>openPlayer(r.info);
+      recommendations.appendChild(d);
     });
   }
 }
 
-function resetUI(){
-  document.getElementById("title").className="skeleton sk-title";
-  document.getElementById("summary").innerHTML=`
-    <div class="skeleton sk-text"></div>
-    <div class="skeleton sk-text"></div>
-    <div class="skeleton sk-text" style="width:60%"></div>
-  `;
-  document.getElementById("castGrid").innerHTML="";
-  document.getElementById("episodes").innerHTML="";
-  document.getElementById("recommendations").innerHTML="";
+function closePlayer(){
+  playerModal.style.display="none";
+  video.pause();
+  video.src="";
 }
 
-/* DEMO */
-loadStream("prince-of-persia-the-sands-of-time");
+loadMovies();
 </script>
 
 </body>
-      </html>
+  </html>
