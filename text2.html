@@ -108,7 +108,7 @@ header img{height:100px}
   align-items:center;
   padding:10px;
 }
-#playerHeader img{height:28px}
+#playerHeader img{height:50px}
 #playerTitle{
   flex:1;
   margin-left:10px;
@@ -129,14 +129,6 @@ header img{height:100px}
 video{
   width:100%;
   height:100%;
-}
-.watermark{
-  position:absolute;
-  top:12px;
-  left:12px;
-  height:32px;
-  opacity:.6;
-  pointer-events:none;
 }
 
 /* DETAILS */
@@ -216,7 +208,27 @@ const castBox=document.getElementById("cast");
 const recGrid=document.querySelector(".recommendGrid");
 const downloadBtn=document.getElementById("download");
 
-/* LOAD MOVIES */
+let currentMovie = null;
+let saveInterval = null;
+
+/* ===== CONTINUE WATCHING UTILS ===== */
+function getContinueData(){
+  return JSON.parse(localStorage.getItem("continueWatching") || "{}");
+}
+
+function saveContinueData(id, data){
+  const all = getContinueData();
+  all[id] = data;
+  localStorage.setItem("continueWatching", JSON.stringify(all));
+}
+
+function removeContinueData(id){
+  const all = getContinueData();
+  delete all[id];
+  localStorage.setItem("continueWatching", JSON.stringify(all));
+}
+
+/* ===== LOAD MOVIES ===== */
 async function loadMovies(q="latest"){
   moviesBox.innerHTML="";
   for(let i=0;i<12;i++){
@@ -246,16 +258,18 @@ async function loadMovies(q="latest"){
   });
 }
 
-/* OPEN PLAYER */
+/* ===== OPEN PLAYER ===== */
 async function openMovie(m,all){
+  currentMovie = m;
   player.style.display="block";
   titleBox.textContent=m.title;
   descBox.innerHTML=m.description?`<div class="sectionTitle">Summary</div><p>${m.description}</p>`:"";
   castBox.innerHTML=m.cast?`<div class="sectionTitle">Cast</div><p>${m.cast.join(", ")}</p>`:"";
   recGrid.innerHTML="";
   video.pause();
+  video.src="";
 
-  // RECOMMENDATIONS
+  // recommendations
   all.filter(x=>x.subjectId!==m.subjectId).slice(0,10).forEach(rm=>{
     const el=document.createElement("div");
     el.className="movie";
@@ -282,17 +296,75 @@ async function openMovie(m,all){
 
   video.src=j.stream;
   video.load();
+
+  // ===== RESUME LOGIC =====
+  const saved = getContinueData()[m.subjectId];
+  video.onloadedmetadata = () => {
+    if(saved && saved.time < video.duration - 10){
+      video.currentTime = saved.time;
+    }
+  };
+
   downloadBtn.style.display="block";
   downloadBtn.onclick=()=>window.open(j.download,"_blank");
+
+  startSavingProgress();
 }
 
-/* CLOSE */
+/* ===== SAVE PROGRESS ===== */
+function startSavingProgress(){
+  clearInterval(saveInterval);
+
+  saveInterval = setInterval(()=>{
+    if(!currentMovie || video.paused || video.ended) return;
+
+    saveContinueData(currentMovie.subjectId,{
+      title: currentMovie.title,
+      poster: currentMovie.cover?.url,
+      time: Math.floor(video.currentTime),
+      duration: Math.floor(video.duration),
+      updatedAt: Date.now()
+    });
+  },5000);
+}
+
+/* ===== EVENTS ===== */
+video.addEventListener("pause",()=>{
+  if(currentMovie){
+    saveContinueData(currentMovie.subjectId,{
+      title: currentMovie.title,
+      poster: currentMovie.cover?.url,
+      time: Math.floor(video.currentTime),
+      duration: Math.floor(video.duration),
+      updatedAt: Date.now()
+    });
+  }
+});
+
+video.addEventListener("ended",()=>{
+  if(currentMovie){
+    removeContinueData(currentMovie.subjectId);
+  }
+});
+
+/* ===== CLOSE PLAYER ===== */
 document.getElementById("close").onclick=()=>{
+  if(currentMovie){
+    saveContinueData(currentMovie.subjectId,{
+      title: currentMovie.title,
+      poster: currentMovie.cover?.url,
+      time: Math.floor(video.currentTime),
+      duration: Math.floor(video.duration),
+      updatedAt: Date.now()
+    });
+  }
+  clearInterval(saveInterval);
   video.pause();
   video.src="";
   player.style.display="none";
 };
 
+/* SEARCH */
 search.oninput=()=>loadMovies(search.value||"latest");
 loadMovies();
 </script>
