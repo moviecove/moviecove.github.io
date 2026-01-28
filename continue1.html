@@ -5,123 +5,129 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Continue Watching</title>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
+*{box-sizing:border-box}
 body{
   margin:0;
-  background:#000;
-  color:#fff;
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:system-ui,Arial;
+  background:var(--bg);
+  color:var(--text);
 }
-body.light{background:#f4f4f4;color:#000}
+
+/* THEME */
+:root{
+  --bg:#000;
+  --card:#111;
+  --text:#fff;
+  --muted:#aaa;
+  --accent:#e50914;
+}
+body.light{
+  --bg:#f5f5f5;
+  --card:#fff;
+  --text:#000;
+  --muted:#555;
+}
 
 /* HEADER */
 header{
   display:flex;
   align-items:center;
-  gap:10px;
-  padding:12px;
+  padding:12px 16px;
+  background:var(--card);
 }
-#logo{color:#e50914;font-size:22px;font-weight:bold}
-#title{font-size:20px}
-#userEmail{margin-left:auto;font-size:14px;opacity:.8}
+header img{height:40px}
+#username{
+  margin-left:auto;
+  font-size:13px;
+  opacity:.9;
+}
 
 /* GRID */
 #list{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
-  padding:12px;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:14px;
+  padding:14px 16px 90px;
 }
 
 .card{
   cursor:pointer;
   position:relative;
 }
-
-.card img{
-  width:100%;
+.poster{
+  aspect-ratio:2/3;
+  background:#222;
   border-radius:10px;
+  overflow:hidden;
 }
-
+.poster img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
 .card h4{
-  font-size:14px;
-  margin:6px 0 0;
-}
-
-/* DELETE BUTTON */
-.delete{
-  position:absolute;
-  top:8px;
-  right:8px;
-  background:rgba(0,0,0,.7);
-  color:#fff;
-  padding:6px;
-  border-radius:50%;
-  font-size:14px;
-}
-
-/* PLAYER */
-#playerBox{
-  position:fixed;
-  inset:0;
-  background:#000;
-  display:none;
-  z-index:9999;
-}
-
-#playerHeader{
-  display:flex;
-  align-items:center;
-  padding:8px;
-  background:#111;
-}
-
-#playerHeader span{
-  color:#e50914;
-  font-weight:bold;
-}
-
-#playerTitle{
-  margin-left:10px;
-  font-size:14px;
+  font-size:13px;
+  margin:6px 2px 0;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
+.progress{
+  position:absolute;
+  bottom:0;
+  left:0;
+  height:4px;
+  background:var(--accent);
+}
 
-#playerHeader div{margin-left:auto;}
-
-#playerHeader button{
-  background:none;
-  border:none;
+/* DELETE */
+.delete{
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:rgba(0,0,0,.7);
   color:#fff;
-  font-size:20px;
+  border-radius:50%;
+  padding:6px;
+  font-size:12px;
+}
+
+/* PLAYER */
+#player{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:none;
+  z-index:9999;
+}
+#playerHeader{
+  display:flex;
+  align-items:center;
+  padding:10px;
+  background:var(--card);
+}
+#playerHeader img{height:30px}
+#playerTitle{
+  flex:1;
   margin-left:10px;
+  font-size:14px;
+}
+#close{
+  font-size:20px;
+  cursor:pointer;
 }
 
-#playerBox iframe{
+/* VIDEO */
+.videoWrap{
+  height:55vh;
+  background:#000;
+}
+video{
   width:100%;
-  height:calc(100% - 40px);
-  border:none;
-}
-
-/* MINIMIZED */
-.minimized{
-  width:75vw;
-  height:42vw;
-  max-height:75vh;
-  inset:auto 10px 80px auto;
-  cursor:move;
-}
-/* LOGO PLACEHOLDERS */
-#logo{
-  height:70px;
-}
-
-#playerLogo{
-  height:28px;
+  height:100%;
 }
 
 /* NAV */
@@ -130,138 +136,220 @@ nav{
   bottom:0;
   left:0;
   right:0;
-  background:#111;
+  background:var(--card);
   display:flex;
   justify-content:space-around;
   padding:10px 0;
 }
-nav a{color:#fff;text-decoration:none}
-nav i{font-size:20px}
+nav a{
+  color:var(--text);
+  font-size:12px;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+nav i{font-size:18px}
+
+@media(max-width:600px){
+  .videoWrap{height:45vh}
+}
 </style>
 </head>
 
 <body>
 
 <header>
-  <img src="logo.png" id="logo" alt="Logo">
-  <div id="title">Watch History</div>
-  <div id="userEmail"></div>
+  <img src="logo.png">
+  <div id="username"></div>
 </header>
 
 <div id="list"></div>
 
 <!-- PLAYER -->
-<div id="playerBox">
+<div id="player">
   <div id="playerHeader">
-    <img src="logo.png" id="playerLogo" alt="Logo">
+    <img src="logo.png">
     <div id="playerTitle"></div>
-    <div>
-      <button id="minBtn"><i class="fa-solid fa-minus"></i></button>
-      <button id="closeBtn"><i class="fa-solid fa-xmark"></i></button>
-    </div>
+    <div id="close">✖</div>
   </div>
-  <iframe id="playerFrame" allowfullscreen></iframe>
+
+  <div class="videoWrap">
+    <video id="video" controls playsinline></video>
+  </div>
 </div>
 
+<!-- NAV -->
 <nav>
-  <a href="home.html"><i class="fa-solid fa-house"></i></a>
-  <a href="continue1.html"><i class="fa-solid fa-video"></i></a>
-  <a href="settings1.html"><i class="fa-solid fa-gear"></i></a>
-  <a href="#" id="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  <a href="index.html">
+    <i class="fa-solid fa-house"></i>
+    <span>Home</span>
+  </a>
+  <a href="continue1.html">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+    <span>Continue</span>
+  </a>
+  <a href="settings.html">
+    <i class="fa-solid fa-gear"></i>
+    <span>Settings</span>
+  </a>
 </nav>
 
 <script>
+/* AUTH */
+if(localStorage.getItem("loggedIn")!=="yes"){
+  location.href="login.html";
+}
+
+/* USER */
+const email=localStorage.getItem("userEmail");
+document.getElementById("username").textContent=email?.split("@")[0]||"";
+
 /* THEME */
 if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
-/* AUTH */
-const email = localStorage.getItem("userEmail");
-if(localStorage.getItem("loggedIn")!=="yes" || !email){
-  location.href="login.html";
-}
-document.getElementById("userEmail").textContent=email;
+const BACKEND="https://moviecove-backend.onrender.com";
+const TOKEN="moviecove_secure_token_08166704020_tony";
+
+const list=document.getElementById("list");
+const player=document.getElementById("player");
+const video=document.getElementById("video");
+const titleBox=document.getElementById("playerTitle");
+
+let current=null;
+let saveInterval=null;
 
 /* CONTINUE DATA */
-const key="continue_"+email;
-const listDiv=document.getElementById("list");
+function getData(){
+  return JSON.parse(localStorage.getItem("continueWatching")||"{}");
+}
+function save(id,data){
+  const all=getData();
+  all[id]=data;
+  localStorage.setItem("continueWatching",JSON.stringify(all));
+}
+function remove(id){
+  const all=getData();
+  delete all[id];
+  localStorage.setItem("continueWatching",JSON.stringify(all));
+}
 
-/* PLAYER */
-const playerBox=document.getElementById("playerBox");
-const frame=document.getElementById("playerFrame");
-const playerTitle=document.getElementById("playerTitle");
+/* LOAD LIST */
+function load(){
+  list.innerHTML="";
+  const data=getData();
+  const keys=Object.keys(data);
 
-/* LOAD */
-function loadContinue(){
-  listDiv.innerHTML="";
-  const data=JSON.parse(localStorage.getItem(key)||"[]");
-
-  if(!data.length){
-    listDiv.innerHTML="<p>No movies yet</p>";
+  if(!keys.length){
+    list.innerHTML="<p style='padding:16px'>No videos yet</p>";
     return;
   }
 
-  data.forEach((m,i)=>{
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <img src="${m.thumbnail}">
+  keys.sort((a,b)=>data[b].updatedAt-data[a].updatedAt);
+
+  keys.forEach(id=>{
+    const m=data[id];
+    const percent=Math.floor((m.time/m.duration)*100);
+
+    const el=document.createElement("div");
+    el.className="card";
+    el.innerHTML=`
+      <div class="poster">
+        <img src="${m.poster||""}">
+        <div class="progress" style="width:${percent}%"></div>
+        <div class="delete"><i class="fa-solid fa-trash"></i></div>
+      </div>
       <h4>${m.title}</h4>
-      <div class="delete"><i class="fa-solid fa-trash"></i></div>
     `;
 
-    card.onclick=()=>play(m.videoId,m.title);
-
-    card.querySelector(".delete").onclick=e=>{
+    el.onclick=()=>play(id,m);
+    el.querySelector(".delete").onclick=e=>{
       e.stopPropagation();
       if(confirm("Remove from Continue Watching?")){
-        data.splice(i,1);
-        localStorage.setItem(key,JSON.stringify(data));
-        loadContinue();
+        remove(id);
+        load();
       }
     };
 
-    listDiv.appendChild(card);
+    list.appendChild(el);
   });
 }
 
 /* PLAY */
-function play(id,title){
-  playerTitle.textContent=title;
-  frame.src="https://www.youtube.com/embed/"+id+"?autoplay=1&controls=0";
-  playerBox.style.display="block";
-  playerBox.classList.remove("minimized");
+async function play(id,m){
+  current={id,...m};
+  player.style.display="block";
+  titleBox.textContent=m.title;
+  video.src="";
+  video.pause();
+
+  const r=await fetch(`${BACKEND}/stream?info=${id}`,{
+    headers:{Authorization:`Bearer ${TOKEN}`}
+  });
+  const j=await r.json();
+
+  if(!j.playable){
+    alert("Video unavailable");
+    return;
+  }
+
+  video.src=j.stream;
+  video.load();
+
+  video.onloadedmetadata=()=>{
+    if(m.time<video.duration-5){
+      video.currentTime=m.time;
+    }
+  };
+
+  startSaving();
 }
 
-/* CONTROLS */
-closeBtn.onclick=()=>{
-  frame.src="";
-  playerBox.style.display="none";
-};
-minBtn.onclick=()=>playerBox.classList.toggle("minimized");
+/* AUTO SAVE */
+function startSaving(){
+  clearInterval(saveInterval);
+  saveInterval=setInterval(()=>{
+    if(!current||video.paused||video.ended)return;
+    save(current.id,{
+      title:current.title,
+      poster:current.poster,
+      time:Math.floor(video.currentTime),
+      duration:Math.floor(video.duration),
+      updatedAt:Date.now()
+    });
+  },4000);
+}
 
-/* DRAG */
-let drag=false,ox=0,oy=0;
-playerBox.onmousedown=e=>{
-  if(!playerBox.classList.contains("minimized"))return;
-  drag=true;ox=e.offsetX;oy=e.offsetY;
-};
-document.onmousemove=e=>{
-  if(!drag)return;
-  playerBox.style.left=e.pageX-ox+"px";
-  playerBox.style.top=e.pageY-oy+"px";
-};
-document.onmouseup=()=>drag=false;
+video.addEventListener("pause",()=>startSaving());
 
-/* LOGOUT */
-logout.onclick=()=>{
-  localStorage.clear();
-  location.href="login.html";
+video.addEventListener("ended",()=>{
+  remove(current.id);
+  clearInterval(saveInterval);
+  load();
+});
+
+/* CLOSE */
+close.onclick=()=>{
+  if(current){
+    save(current.id,{
+      title:current.title,
+      poster:current.poster,
+      time:Math.floor(video.currentTime),
+      duration:Math.floor(video.duration),
+      updatedAt:Date.now()
+    });
+  }
+  clearInterval(saveInterval);
+  video.pause();
+  video.src="";
+  player.style.display="none";
 };
 
-loadContinue();
+load();
 </script>
 
 </body>
-</html>
+      </html>
