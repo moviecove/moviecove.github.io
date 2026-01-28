@@ -5,139 +5,173 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MovieCove</title>
 
+<meta name="theme-color" content="#e50914">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
 body{
   margin:0;
   background:#000;
   color:#fff;
-  font-family:system-ui, sans-serif;
+  font-family:Arial, sans-serif;
 }
 
 /* HEADER */
 header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:#111;
+  padding:12px 16px;
   display:flex;
   align-items:center;
+  gap:10px;
+}
+#logo{height:40px}
+#siteName{color:#e50914;font-size:22px;font-weight:bold}
+#userName{margin-left:auto;font-size:13px;opacity:.9}
+
+/* SEARCH */
+#searchBox{
+  width:calc(100% - 32px);
+  margin:12px 16px;
   padding:12px;
-  border-bottom:1px solid #222;
-}
-header img{
-  height:34px;
-}
-#userName{
-  margin-left:auto;
-  font-size:14px;
-  opacity:.85;
-  max-width:120px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  border-radius:6px;
+  border:none;
+  font-size:16px;
 }
 
 /* MOVIE GRID */
 #movies{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  grid-template-columns:repeat(3, 1fr);
   gap:12px;
-  padding:12px;
+  padding:12px 16px 90px;
 }
+
 .movie{
+  background:#111;
+  border-radius:10px;
+  overflow:hidden;
   cursor:pointer;
+  position:relative;
 }
 .movie img{
   width:100%;
-  border-radius:10px;
+  aspect-ratio:2/3;
+  object-fit:cover;
 }
-.movie-title{
+.movie h4{
   font-size:13px;
-  margin-top:6px;
+  margin:6px;
+  line-height:1.2;
+}
+
+/* RATING BADGE */
+.rating{
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:rgba(0,0,0,.75);
+  padding:2px 6px;
+  font-size:11px;
+  border-radius:4px;
 }
 
 /* PLAYER MODAL */
-#playerModal{
+#playerBox{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.95);
   display:none;
-  flex-direction:column;
-  z-index:999;
-  overflow:auto;
+  z-index:9999;
+  overflow-y:auto;
+}
+
+#playerCard{
+  max-width:900px;
+  margin:20px auto;
+  background:#111;
+  border-radius:12px;
+  overflow:hidden;
 }
 
 /* PLAYER HEADER */
-#playerTop{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
+#playerHeader{
   display:flex;
   align-items:center;
-  z-index:1000;
+  gap:8px;
+  padding:10px;
+  background:#000;
 }
-#playerTop img{
-  height:28px;
-}
-#closeBtn{
-  margin-left:auto;
-  font-size:22px;
-  cursor:pointer;
+#playerHeader img{height:28px}
+#playerTitle{flex:1;font-size:14px}
+#playerHeader button{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:20px;
 }
 
 /* VIDEO */
-video{
+.videoWrap{
+  position:relative;
   width:100%;
-  height:55vh;
+  height:60vh;
   background:#000;
 }
+.videoWrap video{
+  width:100%;
+  height:100%;
+}
 
-/* INFO */
-#info{
-  padding:12px;
+/* WATERMARK */
+.watermark{
+  position:absolute;
+  top:12px;
+  left:12px;
+  height:34px;
+  opacity:.65;
+  pointer-events:none;
+  z-index:10;
 }
-#title{
-  font-size:20px;
-  font-weight:600;
-}
-#summary{
+
+/* DETAILS */
+#details{
+  padding:14px;
   font-size:14px;
-  opacity:.9;
-  margin:8px 0;
 }
-
-/* CAST */
-#castGrid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
-  gap:10px;
-}
-.castCard img{
-  width:100%;
-  aspect-ratio:2/3;
-  object-fit:cover;
-  border-radius:8px;
-}
-.castName{
-  font-size:12px;
-  text-align:center;
+#details p{
   opacity:.85;
+  line-height:1.5;
 }
-
-/* BUTTON */
-button{
-  background:#e50914;
-  color:#fff;
-  border:none;
-  padding:10px;
-  border-radius:6px;
-  font-weight:600;
-  margin:10px 0;
+#downloadBtn{
   width:100%;
+  margin-top:12px;
+  padding:12px;
+  background:#e50914;
+  border:none;
+  color:#fff;
+  font-size:15px;
+  border-radius:6px;
 }
 
-/* EPISODES / RECOMMEND */
-.item{
-  padding:10px;
-  border-bottom:1px solid #222;
-  cursor:pointer;
+/* NAV */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#111;
+  display:flex;
+  justify-content:space-around;
+  padding:10px 0;
+}
+nav a{color:#fff;font-size:20px}
+
+@media(min-width:768px){
+  #movies{grid-template-columns:repeat(5,1fr)}
 }
 </style>
 </head>
@@ -145,135 +179,114 @@ button{
 <body>
 
 <header>
-  <img src="logo.png" alt="MovieCove">
+  <img src="logo.png" id="logo">
+  <div id="siteName">MovieCove</div>
   <div id="userName">Guest</div>
 </header>
 
+<input id="searchBox" placeholder="Search movies...">
 <div id="movies"></div>
 
-<!-- PLAYER MODAL -->
-<div id="playerModal">
-  <div id="playerTop">
-    <img src="logo.png" alt="MovieCove">
-    <div id="closeBtn" onclick="closePlayer()">✕</div>
-  </div>
+<!-- PLAYER -->
+<div id="playerBox">
+  <div id="playerCard">
+    <div id="playerHeader">
+      <img src="logo.png">
+      <div id="playerTitle"></div>
+      <button onclick="closePlayer()">✖</button>
+    </div>
 
-  <video id="video" controls></video>
+    <div class="videoWrap">
+      <video id="video" controls playsinline></video>
+      <img src="logo.png" class="watermark">
+    </div>
 
-  <div id="info">
-    <div id="title"></div>
-    <div id="summary"></div>
-
-    <button id="downloadBtn" hidden>Download</button>
-
-    <h3>Cast</h3>
-    <div id="castGrid"></div>
-
-    <div id="episodes"></div>
-    <div id="recommendations"></div>
+    <div id="details">
+      <p id="movieDesc"></p>
+      <button id="downloadBtn">Download</button>
+    </div>
   </div>
 </div>
+
+<nav>
+  <a href="#"><i class="fa fa-house"></i></a>
+  <a href="#"><i class="fa fa-play"></i></a>
+  <a href="#"><i class="fa fa-gear"></i></a>
+</nav>
 
 <script>
 const BACKEND="https://moviecove-backend.onrender.com";
 const TOKEN="moviecove_secure_token_08166704020_tony";
 
+const moviesBox=document.getElementById("movies");
+const player=document.getElementById("playerBox");
+const video=document.getElementById("video");
+const titleBox=document.getElementById("playerTitle");
+const descBox=document.getElementById("movieDesc");
+const downloadBtn=document.getElementById("downloadBtn");
+const userName=document.getElementById("userName");
+
 /* USER NAME */
 const email=localStorage.getItem("userEmail");
 if(email){
-  document.getElementById("userName").textContent=email.split("@")[0];
+  const name=email.split("@")[0];
+  userName.textContent=name.charAt(0).toUpperCase()+name.slice(1);
 }
 
 /* LOAD MOVIES */
-async function loadMovies(){
-  const res=await fetch(`${BACKEND}/movies?q=latest`,{
+async function loadMovies(q="latest"){
+  moviesBox.innerHTML="Loading...";
+  const r=await fetch(`${BACKEND}/movies?q=${encodeURIComponent(q)}`,{
     headers:{Authorization:`Bearer ${TOKEN}`}
   });
-  const data=await res.json();
-  const box=document.getElementById("movies");
-
-  data.items.forEach(m=>{
+  const j=await r.json();
+  const items=j.items||[];
+  moviesBox.innerHTML="";
+  items.forEach(m=>{
     const d=document.createElement("div");
     d.className="movie";
     d.innerHTML=`
-      <img src="${m.image}">
-      <div class="movie-title">${m.title}</div>
+      <img src="${m.cover?.url||''}">
+      <div class="rating">${m.imdbRatingValue||"N/A"}★</div>
+      <h4>${m.title}</h4>
     `;
-    d.onclick=()=>openPlayer(m.subjectId);
-    box.appendChild(d);
+    d.onclick=()=>openMovie(m);
+    moviesBox.appendChild(d);
   });
 }
 
 /* OPEN PLAYER */
-async function openPlayer(info,season=null,episode=null){
-  playerModal.style.display="flex";
+async function openMovie(m){
+  player.style.display="block";
+  titleBox.textContent=m.title;
+  descBox.textContent=m.description||"";
+  video.pause();
+  video.removeAttribute("src");
 
-  let url=`${BACKEND}/stream?info=${info}`;
-  if(season && episode) url+=`&season=${season}&episode=${episode}`;
-
-  const res=await fetch(url,{
+  const r=await fetch(`${BACKEND}/stream?info=${m.subjectId}`,{
     headers:{Authorization:`Bearer ${TOKEN}`}
   });
-  const data=await res.json();
+  const j=await r.json();
 
-  if(!data.playable){
-    alert("Stream not available");
-    closePlayer();
+  if(!j.playable){
+    descBox.textContent="This movie is currently unavailable.";
+    downloadBtn.style.display="none";
     return;
   }
 
-  video.src=data.stream;
-  title.textContent=data.title || "";
-  summary.textContent=data.summary || "No description available.";
-
-  /* DOWNLOAD */
-  if(data.download){
-    downloadBtn.hidden=false;
-    downloadBtn.onclick=()=>window.open(data.download,"_blank");
-  }else downloadBtn.hidden=true;
-
-  /* CAST */
-  castGrid.innerHTML="";
-  data.cast?.forEach(c=>{
-    castGrid.innerHTML+=`
-      <div class="castCard">
-        <img src="${c.photo || 'https://via.placeholder.com/300x450'}">
-        <div class="castName">${c.name}</div>
-      </div>
-    `;
-  });
-
-  /* EPISODES */
-  episodes.innerHTML="";
-  if(data.episodes){
-    data.episodes.forEach(e=>{
-      const d=document.createElement("div");
-      d.className="item";
-      d.textContent=`S${e.season} E${e.episode} - ${e.title}`;
-      d.onclick=()=>openPlayer(info,e.season,e.episode);
-      episodes.appendChild(d);
-    });
-  }
-
-  /* RECOMMENDATIONS */
-  recommendations.innerHTML="";
-  if(!data.episodes && data.recommendations){
-    data.recommendations.forEach(r=>{
-      const d=document.createElement("div");
-      d.className="item";
-      d.textContent=r.title;
-      d.onclick=()=>openPlayer(r.info);
-      recommendations.appendChild(d);
-    });
-  }
+  video.src=j.stream;
+  downloadBtn.style.display="block";
+  downloadBtn.onclick=()=>window.open(j.download,"_blank");
 }
 
+/* CLOSE */
 function closePlayer(){
-  playerModal.style.display="none";
   video.pause();
-  video.src="";
+  video.removeAttribute("src");
+  player.style.display="none";
 }
 
+searchBox.oninput=()=>loadMovies(searchBox.value||"latest");
 loadMovies();
 </script>
 
