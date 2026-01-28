@@ -144,7 +144,7 @@ nav{
   background:#111;
   display:flex;
   justify-content:space-around;
-  padding:10px 0;
+  padding:12px 0;
 }
 nav a{
   color:#fff;
@@ -233,11 +233,12 @@ if(localStorage.getItem("loggedIn")!=="yes"){
 }
 
 /* USERNAME */
-const email=localStorage.getItem("userEmail");
+const email = localStorage.getItem("userEmail");
 if(email){
-  document.getElementById("username").textContent=email.split("@")[0];
-}
-
+  const name = email.split("@")[0];
+  document.getElementById("username").textContent = name;
+  document.getElementById("avatar").textContent = name.charAt(0);
+  }
 /* THEME */
 const themeToggle=document.getElementById("themeToggle");
 if(localStorage.getItem("theme")==="light"){
