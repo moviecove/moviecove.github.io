@@ -450,6 +450,17 @@ document.getElementById("close").onclick=()=>{
 /* SEARCH */
 search.oninput=()=>loadMovies(search.value||"latest");
 loadMovies();
+  /* ===== THEME LOAD ===== */
+const savedTheme = localStorage.getItem("theme") || "dark";
+if(savedTheme === "light"){
+  document.body.classList.add("light");
+}
+
+/* ===== TOGGLE FUNCTION ===== */
+function toggleTheme(){
+  const isLight = document.body.classList.toggle("light");
+  localStorage.setItem("theme", isLight ? "light" : "dark");
+  }
 </script>
 
 </body>
