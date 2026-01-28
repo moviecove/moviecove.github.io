@@ -34,6 +34,31 @@ header img{height:100px}
   font-size:13px;
   opacity:.9;
   }
+  /* ===== THEME VARIABLES ===== */
+:root{
+  --bg:#000;
+  --card:#111;
+  --text:#fff;
+  --muted:#aaa;
+  --accent:#e50914;
+}
+
+body.light{
+  --bg:#f5f5f5;
+  --card:#fff;
+  --text:#000;
+  --muted:#555;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* common surfaces */
+header, nav, .poster, #player{
+  background:var(--card);
+  }
 
 /* SEARCH */
 #search{
