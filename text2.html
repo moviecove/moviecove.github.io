@@ -1,177 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>MovieCove</title>
 
-<meta name="theme-color" content="#e50914">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-body{
-  margin:0;
-  background:#000;
-  color:#fff;
-  font-family:Arial, sans-serif;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #000;
+  color: #fff;
+  font-family: system-ui, sans-serif;
 }
 
 /* HEADER */
-header{
-  position:sticky;
-  top:0;
-  z-index:1000;
-  background:#111;
-  padding:12px 16px;
-  display:flex;
-  align-items:center;
-  gap:10px;
+header {
+  padding: 10px 14px;
+  background: #000;
 }
-#logo{height:40px}
-#siteName{color:#e50914;font-size:22px;font-weight:bold}
-#userName{margin-left:auto;font-size:13px;opacity:.9}
+header img {
+  height: 32px;
+}
 
 /* SEARCH */
-#searchBox{
-  width:calc(100% - 32px);
-  margin:12px 16px;
-  padding:12px;
-  border-radius:6px;
-  border:none;
-  font-size:16px;
+.search-box {
+  padding: 12px;
+}
+.search-box input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
 }
 
-/* MOVIE GRID */
-#movies{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:12px;
-  padding:12px 16px 90px;
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 12px;
+}
+.card {
+  cursor: pointer;
+}
+.card img {
+  width: 100%;
+  border-radius: 8px;
+}
+.card-title {
+  font-size: 13px;
+  margin-top: 6px;
+  text-align: center;
 }
 
-.movie{
-  background:#111;
-  border-radius:10px;
-  overflow:hidden;
-  cursor:pointer;
-  position:relative;
+/* PLAYER */
+#playerSection {
+  display: none;
+  padding: 12px;
 }
-.movie img{
-  width:100%;
-  aspect-ratio:2/3;
-  object-fit:cover;
+.video-wrap {
+  position: relative;
 }
-.movie h4{
-  font-size:13px;
-  margin:6px;
-  line-height:1.2;
+video {
+  width: 100%;
+  height: 65vh;
+  background: black;
 }
-
-/* RATING BADGE */
-.rating{
-  position:absolute;
-  top:6px;
-  right:6px;
-  background:rgba(0,0,0,.75);
-  padding:2px 6px;
-  font-size:11px;
-  border-radius:4px;
+.watermark {
+  position: absolute;
+  top: 8%;
+  left: 5%;
+  width: 70px;
+  opacity: 0.4;
+  pointer-events: none;
+  animation: move 25s linear infinite;
 }
-
-/* PLAYER MODAL */
-#playerBox{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.95);
-  display:none;
-  z-index:9999;
-  overflow-y:auto;
+@keyframes move {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(60vw,10vh); }
+  50% { transform: translate(30vw,40vh); }
+  75% { transform: translate(70vw,60vh); }
+  100% { transform: translate(0,0); }
 }
 
-#playerCard{
-  max-width:900px;
-  margin:20px auto;
-  background:#111;
-  border-radius:12px;
-  overflow:hidden;
-}
-
-/* PLAYER HEADER */
-#playerHeader{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:10px;
-  background:#000;
-}
-#playerHeader img{height:28px}
-#playerTitle{flex:1;font-size:14px}
-#playerHeader button{
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:20px;
-}
-
-/* VIDEO */
-.videoWrap{
-  position:relative;
-  width:100%;
-  height:60vh;
-  background:#000;
-}
-.videoWrap video{
-  width:100%;
-  height:100%;
-}
-
-/* WATERMARK */
-.watermark{
-  position:absolute;
-  top:12px;
-  left:12px;
-  height:34px;
-  opacity:.65;
-  pointer-events:none;
-  z-index:10;
+.download-btn {
+  margin: 12px 0;
+  padding: 12px;
+  background: red;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  text-decoration: none;
+  display: none;
 }
 
 /* DETAILS */
-#details{
-  padding:14px;
-  font-size:14px;
+.section {
+  margin-top: 16px;
 }
-#details p{
-  opacity:.85;
-  line-height:1.5;
+.section h3 {
+  margin-bottom: 6px;
 }
-#downloadBtn{
-  width:100%;
-  margin-top:12px;
-  padding:12px;
-  background:#e50914;
-  border:none;
-  color:#fff;
-  font-size:15px;
-  border-radius:6px;
+.section p {
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-/* NAV */
-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#111;
-  display:flex;
-  justify-content:space-around;
-  padding:10px 0;
+/* EPISODES */
+.episodes button {
+  margin: 4px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: none;
 }
-nav a{color:#fff;font-size:20px}
 
-@media(min-width:768px){
-  #movies{grid-template-columns:repeat(5,1fr)}
+/* RECOMMEND */
+.recommend {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+.recommend img {
+  height: 120px;
+  border-radius: 6px;
 }
 </style>
 </head>
@@ -179,116 +130,117 @@ nav a{color:#fff;font-size:20px}
 <body>
 
 <header>
-  <img src="logo.png" id="logo">
-  <div id="siteName">MovieCove</div>
-  <div id="userName">Guest</div>
+  <img src="assets/logo.png" alt="MovieCove">
 </header>
 
-<input id="searchBox" placeholder="Search movies...">
-<div id="movies"></div>
-
-<!-- PLAYER -->
-<div id="playerBox">
-  <div id="playerCard">
-    <div id="playerHeader">
-      <img src="logo.png">
-      <div id="playerTitle"></div>
-      <button onclick="closePlayer()">✖</button>
-    </div>
-
-    <div class="videoWrap">
-      <video id="video" controls playsinline></video>
-      <img src="logo.png" class="watermark">
-    </div>
-
-    <div id="details">
-      <p id="movieDesc"></p>
-      <button id="downloadBtn">Download</button>
-    </div>
-  </div>
+<div class="search-box">
+  <input id="search" placeholder="Search movies..." />
 </div>
 
-<nav>
-  <a href="#"><i class="fa fa-house"></i></a>
-  <a href="#"><i class="fa fa-play"></i></a>
-  <a href="#"><i class="fa fa-gear"></i></a>
-</nav>
+<div id="grid" class="grid"></div>
+
+<!-- PLAYER -->
+<div id="playerSection">
+  <div class="video-wrap">
+    <video id="video" controls></video>
+    <img src="assets/logo.png" class="watermark">
+  </div>
+
+  <a id="download" class="download-btn">Download</a>
+
+  <div id="summary" class="section"></div>
+  <div id="cast" class="section"></div>
+  <div id="episodes" class="section episodes"></div>
+  <div id="recommend" class="section"></div>
+</div>
 
 <script>
-const BACKEND="https://moviecove-backend.onrender.com";
-const TOKEN="moviecove_secure_token_08166704020_tony";
+const API = "https://moviecove-backend.onrender.com";
+const TOKEN = "moviecove_secure_token_08166704020_tony";
 
-const moviesBox=document.getElementById("movies");
-const player=document.getElementById("playerBox");
-const video=document.getElementById("video");
-const titleBox=document.getElementById("playerTitle");
-const descBox=document.getElementById("movieDesc");
-const downloadBtn=document.getElementById("downloadBtn");
-const userName=document.getElementById("userName");
+const grid = document.getElementById("grid");
+const playerSection = document.getElementById("playerSection");
+const video = document.getElementById("video");
 
-/* USER NAME */
-const email=localStorage.getItem("userEmail");
-if(email){
-  const name=email.split("@")[0];
-  userName.textContent=name.charAt(0).toUpperCase()+name.slice(1);
-}
-
-/* LOAD MOVIES */
-async function loadMovies(q="latest"){
-  moviesBox.innerHTML="Loading...";
-  const r=await fetch(`${BACKEND}/movies?q=${encodeURIComponent(q)}`,{
-    headers:{Authorization:`Bearer ${TOKEN}`}
+async function loadMovies(q="latest") {
+  const res = await fetch(`${API}/movies?q=${q}`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
   });
-  const j=await r.json();
-  const items=j.items||[];
-  moviesBox.innerHTML="";
-  items.forEach(m=>{
-    const d=document.createElement("div");
-    d.className="movie";
-    d.innerHTML=`
-      <img src="${m.cover?.url||''}">
-      <div class="rating">${m.imdbRatingValue||"N/A"}★</div>
-      <h4>${m.title}</h4>
+  const data = await res.json();
+  grid.innerHTML = "";
+
+  data.items.forEach(m => {
+    if (!m.poster || !m.info) return;
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `
+      <img src="${m.poster}">
+      <div class="card-title">${m.title}</div>
     `;
-    d.onclick=()=>openMovie(m);
-    moviesBox.appendChild(d);
+    c.onclick = () => openMovie(m);
+    grid.appendChild(c);
   });
 }
 
-/* OPEN PLAYER */
-async function openMovie(m){
-  player.style.display="block";
-  titleBox.textContent=m.title;
-  descBox.textContent=m.description||"";
+async function openMovie(movie) {
+  playerSection.style.display = "block";
+  video.src = "";
   video.pause();
-  video.removeAttribute("src");
 
-  const r=await fetch(`${BACKEND}/stream?info=${m.subjectId}`,{
-    headers:{Authorization:`Bearer ${TOKEN}`}
+  const res = await fetch(`${API}/stream?info=${movie.info}`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
   });
-  const j=await r.json();
+  const data = await res.json();
+  if (!data.playable) return alert("No stream available");
 
-  if(!j.playable){
-    descBox.textContent="This movie is currently unavailable.";
-    downloadBtn.style.display="none";
-    return;
+  video.src = data.stream;
+
+  const dBtn = document.getElementById("download");
+  if (data.download) {
+    dBtn.style.display = "block";
+    dBtn.href = data.download;
   }
 
-  video.src=j.stream;
-  downloadBtn.style.display="block";
-  downloadBtn.onclick=()=>window.open(j.download,"_blank");
+  // SUMMARY
+  const s = document.getElementById("summary");
+  s.innerHTML = movie.description ? `<h3>Summary</h3><p>${movie.description}</p>` : "";
+
+  // CAST
+  const c = document.getElementById("cast");
+  c.innerHTML = movie.cast ? `<h3>Cast</h3><p>${movie.cast.join(", ")}</p>` : "";
+
+  // EPISODES
+  const e = document.getElementById("episodes");
+  e.innerHTML = "";
+  if (movie.seasons) {
+    e.innerHTML = "<h3>Episodes</h3>";
+    movie.seasons.forEach(season => {
+      season.episodes.forEach(ep => {
+        const b = document.createElement("button");
+        b.textContent = `S${season.season}E${ep.episode}`;
+        b.onclick = () => openEpisode(movie.info, season.season, ep.episode);
+        e.appendChild(b);
+      });
+    });
+  }
+
+  // RECOMMEND
+  const r = document.getElementById("recommend");
+  r.innerHTML = "<h3>Recommended</h3><div class='recommend'></div>";
+  loadMovies(movie.title.split(" ")[0]);
 }
 
-/* CLOSE */
-function closePlayer(){
-  video.pause();
-  video.removeAttribute("src");
-  player.style.display="none";
+async function openEpisode(info, s, e) {
+  const res = await fetch(`${API}/stream?info=${info}&season=${s}&episode=${e}`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
+  });
+  const data = await res.json();
+  video.src = data.stream;
 }
 
-searchBox.oninput=()=>loadMovies(searchBox.value||"latest");
+document.getElementById("search").oninput = e => loadMovies(e.target.value);
+
 loadMovies();
 </script>
-
 </body>
-  </html>
+    </html>
