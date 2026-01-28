@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MovieCove</title>
 
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#000">
 
 <style>
 *{box-sizing:border-box}
@@ -23,8 +23,6 @@ header{
   z-index:1000;
   background:#111;
   padding:12px 16px;
-  display:flex;
-  align-items:center;
 }
 header img{height:36px}
 
@@ -39,26 +37,30 @@ header img{height:36px}
 }
 
 /* GRID */
-#movies{
+#movies,
+.recommendGrid{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
   gap:12px;
-  padding:12px 16px 90px;
+  padding:12px 16px;
 }
 
+/* CARD */
 .movie{
   cursor:pointer;
 }
 .poster{
   position:relative;
+  width:100%;
+  aspect-ratio:2/3;
   border-radius:10px;
   overflow:hidden;
+  background:#222;
 }
 .poster img{
   width:100%;
-  aspect-ratio:2/3;
+  height:100%;
   object-fit:cover;
-  background:#222;
 }
 .rating{
   position:absolute;
@@ -98,7 +100,7 @@ header img{height:36px}
   overflow:auto;
 }
 #playerCard{
-  max-width:900px;
+  max-width:1000px;
   margin:auto;
 }
 #playerHeader{
@@ -120,7 +122,8 @@ header img{height:36px}
 /* VIDEO */
 .videoWrap{
   position:relative;
-  height:60vh;
+  width:100%;
+  height:55vh;
   background:#000;
 }
 video{
@@ -141,7 +144,7 @@ video{
   padding:14px;
 }
 .sectionTitle{
-  margin-top:14px;
+  margin:16px 0 8px;
   font-weight:bold;
 }
 #download{
@@ -155,8 +158,9 @@ video{
   border-radius:8px;
 }
 
-@media(min-width:768px){
-  #movies{grid-template-columns:repeat(5,1fr)}
+/* MOBILE FIX */
+@media(max-width:600px){
+  .videoWrap{height:45vh}
 }
 </style>
 </head>
@@ -164,7 +168,7 @@ video{
 <body>
 
 <header>
-  <img src="logo.png" alt="MovieCove">
+  <img src="logo.png">
 </header>
 
 <input id="search" placeholder="Search movies…">
@@ -188,7 +192,12 @@ video{
     <div id="details">
       <div id="description"></div>
       <div id="cast"></div>
-      <div id="recommendations"></div>
+
+      <div id="recommendations">
+        <div class="sectionTitle">Recommended</div>
+        <div class="recommendGrid"></div>
+      </div>
+
       <button id="download">Download</button>
     </div>
   </div>
@@ -204,15 +213,15 @@ const video=document.getElementById("video");
 const titleBox=document.getElementById("playerTitle");
 const descBox=document.getElementById("description");
 const castBox=document.getElementById("cast");
-const recBox=document.getElementById("recommendations");
+const recGrid=document.querySelector(".recommendGrid");
 const downloadBtn=document.getElementById("download");
 
 /* LOAD MOVIES */
 async function loadMovies(q="latest"){
   moviesBox.innerHTML="";
-  for(let i=0;i<9;i++){
+  for(let i=0;i<12;i++){
     const sk=document.createElement("div");
-    sk.innerHTML=`<div class="poster skeleton" style="aspect-ratio:2/3"></div>`;
+    sk.innerHTML=`<div class="poster skeleton"></div>`;
     moviesBox.appendChild(sk);
   }
 
@@ -232,19 +241,33 @@ async function loadMovies(q="latest"){
       </div>
       <h4>${m.title}</h4>
     `;
-    el.onclick=()=>openMovie(m);
+    el.onclick=()=>openMovie(m,j.items);
     moviesBox.appendChild(el);
   });
 }
 
 /* OPEN PLAYER */
-async function openMovie(m){
+async function openMovie(m,all){
   player.style.display="block";
   titleBox.textContent=m.title;
   descBox.innerHTML=m.description?`<div class="sectionTitle">Summary</div><p>${m.description}</p>`:"";
   castBox.innerHTML=m.cast?`<div class="sectionTitle">Cast</div><p>${m.cast.join(", ")}</p>`:"";
-  recBox.innerHTML="";
+  recGrid.innerHTML="";
   video.pause();
+
+  // RECOMMENDATIONS
+  all.filter(x=>x.subjectId!==m.subjectId).slice(0,10).forEach(rm=>{
+    const el=document.createElement("div");
+    el.className="movie";
+    el.innerHTML=`
+      <div class="poster">
+        <img src="${rm.cover?.url||''}">
+      </div>
+      <h4>${rm.title}</h4>
+    `;
+    el.onclick=()=>openMovie(rm,all);
+    recGrid.appendChild(el);
+  });
 
   const r=await fetch(`${BACKEND}/stream?info=${m.subjectId}`,{
     headers:{Authorization:`Bearer ${TOKEN}`}
@@ -252,13 +275,13 @@ async function openMovie(m){
   const j=await r.json();
 
   if(!j.playable){
-    descBox.innerHTML="<p>This title is currently unavailable.</p>";
+    descBox.innerHTML="<p>This title is unavailable.</p>";
     downloadBtn.style.display="none";
     return;
   }
 
   video.src=j.stream;
-  video.load();   // FIXES restart bug
+  video.load();
   downloadBtn.style.display="block";
   downloadBtn.onclick=()=>window.open(j.download,"_blank");
 }
@@ -275,4 +298,4 @@ loadMovies();
 </script>
 
 </body>
-  </html>
+    </html>
