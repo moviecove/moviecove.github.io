@@ -34,7 +34,7 @@ header img{height:100px}
   opacity:.9;
 }
 
-/* THEME */
+/* THEME VARS */
 :root{
   --bg:#000;
   --card:#111;
@@ -214,6 +214,7 @@ nav a{
 <input id="search" placeholder="Search movies…">
 <div id="movies"></div>
 
+<!-- PLAYER -->
 <div id="player">
   <div id="playerCard">
     <div id="playerHeader">
@@ -228,9 +229,10 @@ nav a{
 
     <div id="details">
       <div id="description"></div>
-      <div id="cast"></div>
+
       <div class="sectionTitle">Recommended</div>
       <div class="recommendGrid"></div>
+
       <button id="download">Download</button>
     </div>
   </div>
@@ -243,10 +245,10 @@ nav a{
 </nav>
 
 <script>
+/* AUTH */
 if(localStorage.getItem("loggedIn")!=="yes"){
   location.href="login.html";
 }
-
 const email=localStorage.getItem("userEmail");
 if(email){
   document.getElementById("username").textContent=email.split("@")[0];
@@ -265,8 +267,10 @@ const downloadBtn=document.getElementById("download");
 
 let currentMovie=null;
 let saveInterval=null;
-let isOpening=false;
+let currentStream=null;
+let trendingCache=[];
 
+/* CONTINUE DATA */
 function getContinueData(){
   return JSON.parse(localStorage.getItem("continueWatching")||"{}");
 }
@@ -276,6 +280,7 @@ function saveContinueData(id,data){
   localStorage.setItem("continueWatching",JSON.stringify(all));
 }
 
+/* LOAD MOVIES */
 async function loadMovies(q="latest"){
   moviesBox.innerHTML="";
   for(let i=0;i<12;i++){
@@ -288,7 +293,18 @@ async function loadMovies(q="latest"){
   const j=await r.json();
   moviesBox.innerHTML="";
 
-  (j.items||[]).forEach(m=>{
+  if(!(j.items||[]).length){
+    moviesBox.innerHTML=`
+      <div style="grid-column:1/-1;text-align:center;opacity:.7;padding:30px">
+        😔 No movies available right now.
+      </div>
+    `;
+    return;
+  }
+
+  trendingCache=j.items;
+
+  j.items.forEach(m=>{
     const el=document.createElement("div");
     el.className="movie";
     el.innerHTML=`
@@ -298,15 +314,13 @@ async function loadMovies(q="latest"){
       </div>
       <h4>${m.title}</h4>
     `;
-    el.onclick=()=>openMovie(m,j.items);
+    el.onclick=()=>openMovie(m);
     moviesBox.appendChild(el);
   });
 }
 
-async function openMovie(m,all){
-  if(isOpening) return;
-  isOpening=true;
-
+/* OPEN PLAYER */
+async function openMovie(m){
   clearInterval(saveInterval);
   currentMovie=m;
 
@@ -314,10 +328,24 @@ async function openMovie(m,all){
   document.body.style.overflow="hidden";
 
   titleBox.textContent=m.title;
-  descBox.innerHTML=m.description||"";
-  recGrid.innerHTML="";
+  descBox.textContent=m.description||"";
 
-  video.pause();
+  recGrid.innerHTML="";
+  trendingCache
+    .filter(x=>x.subjectId!==m.subjectId)
+    .slice(0,10)
+    .forEach(rm=>{
+      const el=document.createElement("div");
+      el.className="movie";
+      el.innerHTML=`
+        <div class="poster">
+          <img src="${rm.cover?.url||''}">
+        </div>
+        <h4>${rm.title}</h4>
+      `;
+      el.onclick=()=>openMovie(rm);
+      recGrid.appendChild(el);
+    });
 
   const r=await fetch(`${BACKEND}/stream?info=${m.subjectId}`,{
     headers:{Authorization:`Bearer ${TOKEN}`}
@@ -327,12 +355,13 @@ async function openMovie(m,all){
   if(!j.playable){
     descBox.textContent="This movie is unavailable.";
     downloadBtn.style.display="none";
-    isOpening=false;
     return;
   }
 
-  if(video.src!==j.stream){
+  if(currentStream!==j.stream){
+    currentStream=j.stream;
     video.src=j.stream;
+    video.load();
   }
 
   const saved=getContinueData()[m.subjectId];
@@ -355,10 +384,9 @@ async function openMovie(m,all){
       updatedAt:Date.now()
     });
   },5000);
-
-  isOpening=false;
 }
 
+/* CLOSE PLAYER */
 document.getElementById("close").onclick=()=>{
   if(currentMovie){
     saveContinueData(currentMovie.subjectId,{
@@ -371,15 +399,23 @@ document.getElementById("close").onclick=()=>{
   }
   clearInterval(saveInterval);
   video.pause();
-  video.removeAttribute("src");
-  video.load();
+  setTimeout(()=>{
+    video.removeAttribute("src");
+    video.load();
+  },200);
   player.style.display="none";
   document.body.style.overflow="";
 };
 
+/* SEARCH */
 search.oninput=()=>loadMovies(search.value||"latest");
 loadMovies();
+
+/* THEME */
+if(localStorage.getItem("theme")==="light"){
+  document.body.classList.add("light");
+}
 </script>
 
 </body>
-  </html>
+        </html>
