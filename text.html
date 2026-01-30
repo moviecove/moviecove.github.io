@@ -1,78 +1,212 @@
-<!DOCTYPE html>
+<DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MovieCove</title>
 
-<meta name="theme-color" content="#e50914">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<meta name="theme-color" content="#000">
+<!-- FONT AWESOME -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
-body{margin:0;background:#000;color:#fff;font-family:Arial}
-header{background:#111;padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
-#logo{height:50px}
-#siteName{font-size:24px;font-weight:bold;color:#e50914}
-#userEmail{margin-left:auto;font-size:13px;opacity:.8}
-
-#searchBox{width:calc(100% - 40px);margin:12px 20px;padding:12px;border-radius:6px;border:none;font-size:16px}
-
-#movies{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;padding:12px 20px}
-
-.movie{background:#111;border-radius:10px;overflow:hidden;cursor:pointer;position:relative}
-.movie img{width:100%}
-.movie h4{font-size:14px;margin:6px 8px}
-.rating{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);padding:2px 6px;font-size:12px;border-radius:4px}
-
-/* PLAYER */
-#playerBox{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.95);
-  display:none;
-  z-index:9999;
-  overflow-y:auto
-}
-#player{
-  max-width:900px;
-  margin:20px auto;
-  background:#111;
-  border-radius:10px;
-  overflow:hidden
-}
-#playerHeader{
+*{box-sizing:border-box}
+body{
+  margin:0;
   background:#000;
-  padding:10px;
+  color:#fff;
+  font-family:system-ui,Arial;
+}
+
+/* HEADER */
+header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:#111;
+  padding:12px 16px;
   display:flex;
   align-items:center;
-  gap:10px
 }
-#playerHeader img{height:30px}
-#playerTitle{flex:1;font-size:15px}
-#playerHeader button{background:none;border:none;color:#fff;font-size:20px}
+header img{height:100px}
+  #username{
+  margin-left:auto;
+  font-size:13px;
+  opacity:.9;
+  }
+  /* ===== THEME VARIABLES ===== */
+:root{
+  --bg:#000;
+  --card:#111;
+  --text:#fff;
+  --muted:#aaa;
+  --accent:#e50914;
+}
 
-video{width:100%;max-height:60vh;background:#000}
+body.light{
+  --bg:#f5f5f5;
+  --card:#fff;
+  --text:#000;
+  --muted:#555;
+}
 
-#info{padding:12px;font-size:14px;color:#ccc}
-#episodes button{
-  margin:4px;
-  padding:6px 10px;
-  background:#222;
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* common surfaces */
+header, nav, .poster, #player{
+  background:var(--card);
+  }
+
+/* SEARCH */
+#search{
+  width:calc(100% - 32px);
+  margin:12px 16px;
+  padding:12px;
+  border-radius:8px;
   border:none;
-  color:#fff;
-  border-radius:4px;
-  font-size:12px
+  font-size:15px;
 }
-#downloadBtn{
+
+/* GRID */
+#movies,
+.recommendGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+  gap:12px;
+  padding:12px 16px;
+}
+
+/* CARD */
+.movie{
+  cursor:pointer;
+}
+.poster{
+  position:relative;
   width:100%;
-  margin-top:10px;
+  aspect-ratio:2/3;
+  border-radius:10px;
+  overflow:hidden;
+  background:#222;
+}
+.poster img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.rating{
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:rgba(0,0,0,.7);
+  font-size:11px;
+  padding:3px 6px;
+  border-radius:4px;
+}
+.movie h4{
+  font-size:13px;
+  margin:6px 2px 0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* SKELETON */
+.skeleton{
+  animation:pulse 1.4s infinite;
+  background:#222;
+}
+@keyframes pulse{
+  0%{opacity:.4}
+  50%{opacity:.8}
+  100%{opacity:.4}
+}
+
+/* PLAYER */
+#player{
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:none;
+  z-index:9999;
+  overflow:auto;
+}
+#playerCard{
+  max-width:1000px;
+  margin:auto;
+}
+#playerHeader{
+  display:flex;
+  align-items:center;
   padding:10px;
+}
+#playerHeader img{height:50px}
+#playerTitle{
+  flex:1;
+  margin-left:10px;
+  font-size:14px;
+}
+#close{
+  font-size:20px;
+  cursor:pointer;
+}
+
+/* VIDEO */
+.videoWrap{
+  position:relative;
+  width:100%;
+  height:55vh;
+  background:#000;
+}
+video{
+  width:100%;
+  height:100%;
+}
+
+/* DETAILS */
+#details{
+  padding:14px;
+}
+.sectionTitle{
+  margin:16px 0 8px;
+  font-weight:bold;
+}
+#download{
+  width:100%;
+  margin-top:14px;
+  padding:14px;
   background:#e50914;
   border:none;
   color:#fff;
-  border-radius:6px;
-  font-size:15px
+  font-size:15px;
+  border-radius:8px;
+}
+  /* NAV BAR */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#111;
+  display:flex;
+  justify-content:space-around;
+  padding:10px 0;
+}
+nav a{
+  color:#fff;
+  font-size:13px;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  }
+
+/* MOBILE FIX */
+@media(max-width:600px){
+  .videoWrap{height:45vh}
 }
 </style>
 </head>
@@ -80,141 +214,255 @@ video{width:100%;max-height:60vh;background:#000}
 <body>
 
 <header>
-  <img src="logo.png" id="logo">
-  <div id="siteName">MovieCove</div>
-  <div id="userEmail">Not logged in</div>
+  <img src="logo.png">
+  <div id="username"></div>
 </header>
 
-<input id="searchBox" placeholder="Search movies...">
+<input id="search" placeholder="Search movies…">
+
 <div id="movies"></div>
 
 <!-- PLAYER -->
-<div id="playerBox">
-  <div id="player">
+<div id="player">
+  <div id="playerCard">
     <div id="playerHeader">
       <img src="logo.png">
-      <div id="playerTitle">Now Playing</div>
-      <button onclick="closePlayer()">✖</button>
+      <div id="playerTitle"></div>
+      <div id="close">✖</div>
     </div>
 
-    <video id="video" controls playsinline></video>
+    <div class="videoWrap">
+      <video id="video" controls playsinline></video>
+    </div>
 
-    <div id="info">
-      <p id="desc"></p>
-      <div id="episodes"></div>
-      <button id="downloadBtn" style="display:none">Download</button>
+    <div id="details">
+      <div id="description"></div>
+      <div id="cast"></div>
+
+      <div id="recommendations">
+        <div class="sectionTitle">Recommended</div>
+        <div class="recommendGrid"></div>
+      </div>
+
+      <button id="download">Download</button>
     </div>
   </div>
 </div>
+  <!-- NAV -->
+<nav>
+  <a href="home.html">
+    <i class="fa-solid fa-house"></i>
+    <span>Home</span>
+  </a>
+
+  <a href="continue1.html">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+    <span>Continue</span>
+  </a>
+
+  <a href="settings1.html">
+    <i class="fa-solid fa-gear"></i>
+    <span>Settings</span>
+  </a>
+</nav>
 
 <script>
-const BACKEND = "https://moviecove-backend.onrender.com";
-const API_TOKEN = "moviecove_secure_token_08166704020_tony";
-
-const movies = document.getElementById("movies");
-const video = document.getElementById("video");
-const playerBox = document.getElementById("playerBox");
-const titleBox = document.getElementById("playerTitle");
-const desc = document.getElementById("desc");
-const episodes = document.getElementById("episodes");
-const downloadBtn = document.getElementById("downloadBtn");
-const userEmail = document.getElementById("userEmail");
-
-function isLoggedIn(){ return localStorage.getItem("loggedIn")==="yes"; }
-function email(){ return localStorage.getItem("userEmail"); }
-
-userEmail.textContent = isLoggedIn()?email():"Not logged in";
-
-async function api(path){
-  const r = await fetch(BACKEND + path,{
-    headers:{ "Authorization":"Bearer "+API_TOKEN }
-  });
-  return r.json();
+/* 🔐 LOGIN PROTECTION */
+if(localStorage.getItem("loggedIn")!=="yes"){
+  location.href="login.html";
 }
 
+/* USER NAME */
+const email=localStorage.getItem("userEmail");
+if(email){
+  document.getElementById("username").textContent=
+    email.split("@")[0];
+  }
+  
+const BACKEND="https://moviecove-backend.onrender.com";
+const TOKEN="moviecove_secure_token_08166704020_tony";
+
+const moviesBox=document.getElementById("movies");
+const player=document.getElementById("player");
+const video=document.getElementById("video");
+const titleBox=document.getElementById("playerTitle");
+const descBox=document.getElementById("description");
+const castBox=document.getElementById("cast");
+const recGrid=document.querySelector(".recommendGrid");
+const downloadBtn=document.getElementById("download");
+
+let currentMovie = null;
+let saveInterval = null;
+
+/* ===== CONTINUE WATCHING UTILS ===== */
+function getContinueData(){
+  return JSON.parse(localStorage.getItem("continueWatching") || "{}");
+}
+
+function saveContinueData(id, data){
+  const all = getContinueData();
+  all[id] = data;
+  localStorage.setItem("continueWatching", JSON.stringify(all));
+}
+
+function removeContinueData(id){
+  const all = getContinueData();
+  delete all[id];
+  localStorage.setItem("continueWatching", JSON.stringify(all));
+}
+
+/* ===== LOAD MOVIES ===== */
 async function loadMovies(q="latest"){
-  movies.innerHTML="Loading...";
-  try{
-    const j = await api(`/movies?q=${encodeURIComponent(q)}`);
-    movies.innerHTML="";
-    j.items.forEach(m=>{
-      if(!m.subjectId) return;
-      const d=document.createElement("div");
-      d.className="movie";
-      d.innerHTML=`
+  moviesBox.innerHTML="";
+  for(let i=0;i<12;i++){
+    const sk=document.createElement("div");
+    sk.innerHTML=`<div class="poster skeleton"></div>`;
+    moviesBox.appendChild(sk);
+  }
+
+  const r=await fetch(`${BACKEND}/movies?q=${encodeURIComponent(q)}`,{
+    headers:{Authorization:`Bearer ${TOKEN}`}
+  });
+  const j=await r.json();
+  moviesBox.innerHTML="";
+
+  (j.items||[]).forEach(m=>{
+    const el=document.createElement("div");
+    el.className="movie";
+    el.innerHTML=`
+      <div class="poster">
         <img src="${m.cover?.url||''}">
         <div class="rating">${m.imdbRatingValue||"N/A"}★</div>
-        <h4>${m.title}</h4>
-      `;
-      d.onclick=()=>openMovie(m);
-      movies.appendChild(d);
-    });
-  }catch{
-    movies.innerHTML="Failed to load movies";
-  }
+      </div>
+      <h4>${m.title}</h4>
+    `;
+    el.onclick=()=>openMovie(m,j.items);
+    moviesBox.appendChild(el);
+  });
 }
 
-async function openMovie(m){
-  if(!isLoggedIn()){
-    location.href="login.html";
-    return;
-  }
-
+/* ===== OPEN PLAYER ===== */
+async function openMovie(m,all){
+  currentMovie = m;
+  player.style.display="block";
   titleBox.textContent=m.title;
-  desc.textContent=m.description||"";
-  episodes.innerHTML="";
-  downloadBtn.style.display="none";
-
-  playerBox.style.display="block";
-
-  await playStream(m.subjectId);
-}
-
-async function playStream(info, season=null, episode=null){
+  descBox.innerHTML=m.description?`<div class="sectionTitle">Summary</div><p>${m.description}</p>`:"";
+  castBox.innerHTML=m.cast?`<div class="sectionTitle">Cast</div><p>${m.cast.join(", ")}</p>`:"";
+  recGrid.innerHTML="";
   video.pause();
-  video.removeAttribute("src");
-  video.load();
 
-  let url=`/stream?info=${info}`;
-  if(season && episode) url+=`&season=${season}&episode=${episode}`;
-
-  const j = await api(url);
-  if(!j.playable){
-    desc.textContent="Stream unavailable";
-    return;
-  }
-
-  video.src=j.stream;
-  video.load();
-  video.play().catch(()=>{});
-
-  // Subtitles
-  video.innerHTML="";
-  (j.subtitles||[]).forEach(s=>{
-    const t=document.createElement("track");
-    t.kind="subtitles";
-    t.label=s.label||"Sub";
-    t.src=s.url;
-    t.srclang=s.lang||"en";
-    video.appendChild(t);
+  // recommendations
+  all.filter(x=>x.subjectId!==m.subjectId).slice(0,10).forEach(rm=>{
+    const el=document.createElement("div");
+    el.className="movie";
+    el.innerHTML=`
+      <div class="poster">
+        <img src="${rm.cover?.url||''}">
+      </div>
+      <h4>${rm.title}</h4>
+    `;
+    el.onclick=()=>openMovie(rm,all);
+    recGrid.appendChild(el);
   });
 
-  if(j.download){
-    downloadBtn.style.display="block";
-    downloadBtn.onclick=()=>window.open(j.download,"_blank");
+  const r=await fetch(`${BACKEND}/stream?info=${m.subjectId}`,{
+    headers:{Authorization:`Bearer ${TOKEN}`}
+  });
+  const j=await r.json();
+
+  if(!j.playable){
+    descBox.innerHTML="<p>This Movie is unavailable coming soon ❤️.</p>";
+    downloadBtn.style.display="none";
+    return;
   }
+
+  if(video.src !== j.stream){
+  video.src = j.stream;
 }
 
-function closePlayer(){
+  // ===== RESUME LOGIC =====
+  const saved = getContinueData()[m.subjectId];
+  video.onloadedmetadata = () => {
+  if(saved && saved.time && saved.time < video.duration - 5){
+    video.currentTime = saved.time;
+  }
+  video.onloadedmetadata = null; // prevents repeat seek
+};
+
+  downloadBtn.style.display="block";
+  downloadBtn.onclick=()=>window.open(j.download,"_blank");
+
+  startSavingProgress();
+}
+
+/* ===== SAVE PROGRESS ===== */
+function startSavingProgress(){
+  clearInterval(saveInterval);
+
+  saveInterval = setInterval(()=>{
+    if(!currentMovie || video.paused || video.ended) return;
+
+    saveContinueData(currentMovie.subjectId,{
+      title: currentMovie.title,
+      poster: currentMovie.cover?.url,
+      time: Math.floor(video.currentTime),
+      duration: Math.floor(video.duration),
+      updatedAt: Date.now()
+    });
+  },5000);
+}
+
+/* ===== EVENTS ===== */
+video.addEventListener("pause",()=>{
+  if(currentMovie){
+    saveContinueData(currentMovie.subjectId,{
+      title: currentMovie.title,
+      poster: currentMovie.cover?.url,
+      time: Math.floor(video.currentTime),
+      duration: Math.floor(video.duration),
+      updatedAt: Date.now()
+    });
+  }
+});
+
+video.addEventListener("ended",()=>{
+  if(currentMovie){
+    removeContinueData(currentMovie.subjectId);
+  }
+});
+
+/* ===== CLOSE PLAYER ===== */
+document.getElementById("close").onclick=()=>{
+  if(currentMovie){
+    saveContinueData(currentMovie.subjectId,{
+      title: currentMovie.title,
+      poster: currentMovie.cover?.url,
+      time: Math.floor(video.currentTime),
+      duration: Math.floor(video.duration),
+      updatedAt: Date.now()
+    });
+  }
+  clearInterval(saveInterval);
   video.pause();
-  video.removeAttribute("src");
-  video.load();
-  playerBox.style.display="none";
+  video.src="";
+  player.style.display="none";
+};
+
+/* SEARCH */
+search.oninput=()=>loadMovies(search.value||"latest");
+loadMovies();
+  /* ===== THEME LOAD ===== */
+const savedTheme = localStorage.getItem("theme") || "dark";
+if(savedTheme === "light"){
+  document.body.classList.add("light");
 }
 
-searchBox.oninput=()=>loadMovies(searchBox.value||"latest");
-loadMovies("latest");
+/* ===== TOGGLE FUNCTION ===== */
+function toggleTheme(){
+  const isLight = document.body.classList.toggle("light");
+  localStorage.setItem("theme", isLight ? "light" : "dark");
+  }
 </script>
 
 </body>
-  </html>
+        </html>
