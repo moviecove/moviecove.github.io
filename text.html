@@ -206,6 +206,8 @@ nav a{
       controls
       playsinline
       preload="metadata"
+      autoplay
+      muted
       controlsList="noplaybackrate nodownload"
     ></video>
   </div>
@@ -302,7 +304,7 @@ async function loadMovies(q="latest"){
   }
 }
 
-/* OPEN PLAYER (TV MODE) */
+/* OPEN PLAYER — TV MODE */
 async function openMovie(m,all){
   currentMovie=m;
   player.style.display="block";
@@ -323,6 +325,8 @@ async function openMovie(m,all){
   }
 
   video.src=j.stream;
+  video.muted=true;
+  video.play().catch(()=>{});
 
   const saved=getCW()[m.subjectId];
   video.onloadedmetadata=()=>{
@@ -360,7 +364,7 @@ async function openMovie(m,all){
   },5000);
 }
 
-/* 🔒 TV MODE — DISABLE SEEK COMPLETELY */
+/* 🔒 TV MODE — BLOCK SEEK */
 video.addEventListener("seeking",()=>{
   video.currentTime = video.dataset.lastTime
     ? Number(video.dataset.lastTime)
@@ -368,6 +372,11 @@ video.addEventListener("seeking",()=>{
 });
 video.addEventListener("timeupdate",()=>{
   video.dataset.lastTime = video.currentTime;
+});
+
+/* SOUND ENABLE AFTER USER INTERACTION */
+video.addEventListener("play",()=>{
+  video.muted=false;
 });
 
 /* EVENTS */
@@ -396,4 +405,4 @@ loadMovies();
 </script>
 
 </body>
-                   </html>
+  </html>
