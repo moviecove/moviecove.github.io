@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Under Maintenance</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(145deg,#000000,#0d0000);
+    font-family: 'Courier New', monospace;
+    color:white;
+    text-align:center;
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:600px;
+    background:#0b0b0b;
+    border:1px solid #ff0000;
+    border-radius:15px;
+    padding:40px 20px;
+    box-shadow:0 0 25px rgba(255,0,0,0.5);
+}
+
+/* LOGO */
+.logo{
+    width:120px;
+    max-width:40%;
+    margin:0 auto 20px;
+    display:block;
+}
+
+/* TITLE */
+h1{
+    color:#ff0000;
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+p{
+    color:#bbb;
+    margin-bottom:30px;
+    font-size:14px;
+}
+
+/* TIMER */
+.timer{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.timer-box{
+    flex:1;
+    background:#111;
+    border:1px solid #ff0000;
+    border-radius:10px;
+    padding:15px 5px;
+    box-shadow:0 0 15px rgba(255,0,0,0.3);
+}
+
+.timer-box span{
+    display:block;
+    font-size:22px;
+    font-weight:bold;
+    color:#ff2a2a;
+}
+
+.label{
+    font-size:12px;
+    margin-top:5px;
+    color:#999;
+}
+
+/* SMALL SCREENS */
+@media(max-width:500px){
+    .timer{
+        flex-direction:column;
+    }
+
+    .timer-box{
+        width:100%;
+    }
+
+    h1{
+        font-size:22px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 🔥 PUT YOUR LOGO FILE NAME HERE -->
+    <img src="logo.png" class="logo" alt="Logo">
+
+    <h1>⚠ SYSTEM UNDER MAINTENANCE</h1>
+    <p>We're upgrading our servers. Access will be restored soon.</p>
+
+    <div class="timer">
+        <div class="timer-box">
+            <span id="days"></span>
+            <div class="label">Days</div>
+        </div>
+        <div class="timer-box">
+            <span id="hours"></span>
+            <div class="label">Hours</div>
+        </div>
+        <div class="timer-box">
+            <span id="minutes"></span>
+            <div class="label">Minutes</div>
+        </div>
+        <div class="timer-box">
+            <span id="seconds"></span>
+            <div class="label">Seconds</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 🔴 SET YOUR REAL HOST DATE HERE
+    const launchDate = new Date("2026-02-23T18:00:00").getTime();
+    const endDate = launchDate + (5 * 24 * 60 * 60 * 1000);
+
+    function updateTimer(){
+        const now = new Date().getTime();
+        const distance = endDate - now;
+
+        if(distance <= 0){
+            document.querySelector(".container").innerHTML =
+            "<h1 style='color:#00ff00;'>✅ SYSTEM ONLINE</h1>";
+            return;
+        }
+
+        const days = Math.floor(distance / (1000*60*60*24));
+        const hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+        const minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
+        const seconds = Math.floor((distance % (1000*60)) / 1000);
+
+        document.getElementById("days").innerText = days;
+        document.getElementById("hours").innerText = hours;
+        document.getElementById("minutes").innerText = minutes;
+        document.getElementById("seconds").innerText = seconds;
+    }
+
+    updateTimer();
+    setInterval(updateTimer,1000);
+</script>
+
+</body>
+</html>
